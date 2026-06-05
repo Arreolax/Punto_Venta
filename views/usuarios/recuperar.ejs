@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <title>Recuperar contraseña</title>
+  <link href="/styles/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../libs/fontawesome/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+<div class="relative min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+
+  <!-- Fondo naranja izquierdo -->
+  <div class="absolute top-0 left-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+  </div>
+
+  <!-- Fondo naranja derecho -->
+  <div class="absolute top-0 right-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+    <div class="absolute top-4 right-6 text-right text-white text-base leading-tight tracking-wide">
+      <p id="fecha" class="fecha text-sm"></p>
+      <p id="hora" class="hora text-sm"></p>
+    </div>
+  </div>
+
+  <!-- Contenedor -->
+  <div class="relative bg-orange-600 w-[425px] p-8 shadow-md text-center">
+    <div class="relative bg-white w-[360px] p-8 shadow-md text-center mx-auto">
+
+      <div class="flex justify-center mb-6">
+        <img src="/images/logo-b.png" class="w-full h-auto" alt="Logo">
+      </div>
+
+      <h2 class="text-xl font-semibold mb-2">¿Olvidaste tu contraseña?</h2>
+
+      <p class="text-sm text-gray-600 mb-4">
+        Ingresa tu correo electrónico para solicitar un enlace de restablecimiento de contraseña.
+      </p>
+
+      <!-- Formulario de recuperación visible -->
+      <form id="resetForm" class="space-y-4 bg-gray-50 p-4 rounded border border-gray-200">
+        
+        <!-- Mensaje de estado -->
+        <div id="mensaje" class="text-sm p-3 rounded hidden font-medium"></div>
+
+        <!-- Email input -->
+        <div>
+          <label class="text-xs font-medium text-gray-700 block mb-1">Tu correo electrónico</label>
+          <input type="email" id="emailRecover" placeholder="ejemplo@correo.com" 
+                 class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+        </div>
+
+        <!-- Botón submit -->
+        <div class="flex gap-2 pt-2">
+          <button type="submit" id="btnEnviarCorreo" class="flex-1 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition font-medium">
+            Enviar Enlace de Recuperación
+          </button>
+
+          <a href="/" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 transition text-gray-700">
+            Cancelar
+          </a>
+        </div>
+
+        <p class="text-xs text-gray-500 text-center mt-3">
+          <i class="fa-solid fa-info-circle"></i>
+          Se te enviará un enlace de recuperación a tu correo electrónico.
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="fixed bottom-0 left-0 w-full text-center text-sm text-gray-500 italic py-2 bg-gray-100">
+    <button id="btnDevs">
+      <i class="fa-solid fa-circle-info" title="Devs"></i>
+    </button>
+    Versión <%= version %>
+  </div>
+
+  <!-- Modal Devs-->
+  <div id="modalDevs" class="fixed hidden inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="relative bg-white w-full max-w-2xl rounded-lg shadow-lg p-6 animate-fadeIn">
+
+      <button id="btnCerrarModalDevs" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors"
+        title="Cerrar">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <h2 class="text-[20px] font-semibold text-gray-800 pb-3">
+        « Equipo de Desarrollo »
+      </h2>
+
+      <div class="space-y-2 text-[16px] text-gray-600">
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-briefcase"></i>
+          <span class="font-bold not-italic text-black">Guadalupe Vargas -</span>
+          <span class="font-semibold">Líder de Proyecto, Analista y Diseñador</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Alejandro Arreola -</span>
+          <span class="font-semibold">Desarrollador Principal y Tester</span>
+          <a href="https://github.com/Arreolax" target="_blank" class="text-[#FF5100] hover:underline">
+            <i class="fa-brands fa-github"></i> GitHub
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Josue Diaz -</span>
+          <span class="font-semibold">Desarrollador, Tester y Administrador de DB</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Derek Martinez -</span>
+          <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Tomas Tellez -</span>
+          <span class="font-semibold">Desarrollador y Tester</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Euen Galindo -</span>
+          <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<!-- Scripts de funcionalidad -->
+<script src="/js/global.js"></script>
+<script src="/js/page-scripts.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const resetForm = document.getElementById('resetForm');
+  const emailRecover = document.getElementById('emailRecover');
+  const mensaje = document.getElementById('mensaje');
+  const btnEnviarCorreo = document.getElementById('btnEnviarCorreo');
+  
+  // Clase de utilidad para mostrar mensajes con colores
+  function showMessage(text, type) {
+    mensaje.textContent = text;
+    mensaje.classList.remove('hidden', 'bg-red-100', 'text-red-600', 'bg-yellow-100', 'text-yellow-600', 'bg-green-100', 'text-green-600', 'bg-orange-100', 'text-orange-600');
+    
+    if (type === 'error') {
+      mensaje.classList.add('bg-red-100', 'text-red-600');
+    } else if (type === 'warning') {
+      mensaje.classList.add('bg-yellow-100', 'text-yellow-600');
+    } else if (type === 'success') {
+      mensaje.classList.add('bg-green-100', 'text-green-600');
+    } else if (type === 'sending') {
+      mensaje.classList.add('bg-orange-100', 'text-orange-600');
+    }
+  }
+
+  // Permitir Enter para submit
+  emailRecover.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      resetForm.dispatchEvent(new Event('submit'));
+    }
+  });
+
+  // Enviar solicitud de recuperación
+  resetForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailRecover.value.trim();
+    
+    if (!email) {
+      showMessage('Por favor ingresa tu email', 'error');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      showMessage('Email inválido', 'error');
+      return;
+    }
+
+    // Deshabilitar botón y mostrar estado enviando
+    btnEnviarCorreo.disabled = true;
+    btnEnviarCorreo.classList.add('opacity-60', 'cursor-not-allowed');
+    showMessage('Enviando solicitud...', 'sending');
+    
+    try {
+      const response = await fetch('/api/auth/request-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (data.warning) {
+        // Vendedor - mostrar error en rojo
+        showMessage(data.message || 'Para cambiar tu contraseña, contacta a un administrador.', 'error');
+      } else if (data.success) {
+        // Administrador - mostrar éxito en verde
+        showMessage(data.message || 'Si la cuenta existe, recibirás un email con instrucciones de recuperación', 'success');
+        emailRecover.value = '';
+        
+        // Volver al login después de 3 segundos
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
+      } else {
+        showMessage(data.message || 'Error al procesar la solicitud', 'error');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showMessage('Error de conexión. Intenta nuevamente.', 'error');
+    } finally {
+      btnEnviarCorreo.disabled = false;
+      btnEnviarCorreo.classList.remove('opacity-60', 'cursor-not-allowed');
+    }
+  });
+});
+</script>
+</body>
+</html>

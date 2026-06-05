@@ -1,0 +1,176 @@
+<!-- Pantalla de carga -->
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando Ticket...' }) %>
+
+  <!-- Contenido -->
+  <div id="contenido" class="hidden">
+    <% if (ticket) { %>
+      <div class="grid grid-cols-5 gap-6 px-5 items-start">
+
+        <!-- Ticket Info -->
+        <div class="pt-4 p-6 space-y-3 border border-black/40 rounded-lg bg-white shadow-sm col-span-3">
+          <h1 class="font-bold text-center uppercase text-lg">
+            Información Principal
+          </h1>
+          <div class="bg-gray-50 p-4 rounded border border-gray-300 overflow-auto w-full">
+            <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[15px] pl-2">
+
+              <span class="font-semibold text-gray-700">Fecha de Creación:</span>
+              <span class="italic">
+                <%= ticket.fecha %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Nombre del vendedor:</span>
+              <span class="italic">
+                <%= ticket.nombre_empleado %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Folio del ticket:</span>
+              <span class="italic font-medium">
+                <%= ticket.folio %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Nombre del cliente:</span>
+              <span class="italic">
+                <%= ticket.nombre_cliente %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Método de pago:</span>
+              <span class="italic">
+                <%= ticket.metodo_pago.charAt(0).toUpperCase() + ticket.metodo_pago.slice(1).toLowerCase() %>
+              </span>
+
+              <% if (ticket.metodo_pago=="efectivo" ) { %>
+                <span class="font-semibold text-gray-700">Efectivo recibido:</span>
+                <span class="font-bold">$<%= ticket.total_recibido %></span>
+                <% } %>
+
+                  <span class="font-semibold text-gray-700">Total de compra:</span>
+                  <span class="font-bold">$<%= ticket.total_pago %></span>
+
+                  <% if (ticket.metodo_pago=="efectivo" ) { %>
+                    <span class="font-semibold text-gray-700">Cambio devuelto:</span>
+                    <span class="font-bold text-green-600">$<%= ticket.cambio %></span>
+                    <% } %>
+
+            </div>
+
+            <div class="border border-black/30 rounded-lg overflow-hidden mt-5">
+
+              <div class=" text-black px-4 py-3 font-semibold">
+                Productos del ticket
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+
+                  <thead class="bg-gray-600 text-white">
+                    <tr>
+                      <th class="px-4 py-3 text-left">Nombre</th>
+                      <th class="px-4 py-3 text-left">Descripción</th>
+                      <th class="px-4 py-3 text-center">Precio sin IVA</th>
+                      <th class="px-4 py-3 text-center">IVA 16%</th>
+                      <th class="px-4 py-3 text-center">Precio Unitario</th>
+                      <th class="px-4 py-3 text-center">Cantidad</th>
+                      <th class="px-4 py-3 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+
+                  <tbody class="divide-y text-center">
+
+                    <% ticket.productos.forEach(producto=> { %>
+                      <tr class="hover:bg-gray-100">
+
+                        <td class="px-4 py-3 text-left">
+                          <%= producto.nombre %>
+                        </td>
+
+                        <td class="px-4 py-3 italic text-left">
+                          <%= producto.descripcion==null ? "Sin Descripción" : producto.descripcion %>
+                        </td>
+
+                        <td class="px-4 py-3 text-center">
+                          $<%= (producto.precio_unidad / 1.16).toFixed(2) %>
+                        </td>
+
+                        <td class="px-4 py-3 text-center">
+                          $<%= (producto.precio_unidad - (producto.precio_unidad / 1.16)).toFixed(2) %>
+                        </td>
+
+                        <td class="px-4 py-3 text-center">
+                          $<%= producto.precio_unidad %>
+                        </td>
+
+                        <td class="px-4 py-3 text-center">
+                          <%= producto.cantidad %> pz.
+                        </td>
+
+                        <td class="px-4 py-3 font-bold text-right">
+                          $<%= producto.subtotal %>
+                        </td>
+
+                      </tr>
+                      <% }) %>
+
+                  </tbody>
+
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="flex justify-center">
+            <button id="btnRegresar"
+              class="px-6 py-2 bg-[#FF2A00] text-white font-semibold rounded hover:bg-[#FF2A00]/80 transition">
+              Regresar
+            </button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="pt-4 p-6 space-y-3 border border-black/40 rounded-lg bg-white shadow-sm col-span-2">
+          <h1 class="font-bold text-center uppercase">Vista Previa</h1>
+
+          <div class="bg-gray-50 p-4 rounded border border-gray-300 overflow-auto w-full flex justify-center">
+            <%- include('../components/ticket') %>
+          </div>
+
+          <div class="flex justify-center gap-3 flex-wrap">
+            <button id="btnImprimirTicket" data-folio="<%= ticket.folio %>"
+              class="px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80">
+              Imprimir Ticket
+            </button>
+
+            <button id="btnGenerarPDF" data-folio="<%= ticket.folio %>"
+              class="px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80">
+              Descargar Ticket
+            </button>
+
+            <a title="Generar Factura" href="/facturas/nueva/<%= ticket.folio %>"
+              class="px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80">
+              Generar Factura
+            </a>
+
+          </div>
+        </div>
+
+      </div>
+  </div>
+
+  <% }else{ %>
+    <div class="border-black/30 border-t-4 p-6 text-center">
+      <p class="text-center font-bold text-2xl">Ticket no encontrado</p>
+      <i class="fa-solid fa-circle-exclamation text-[120px] pt-3 text-red-500"></i>
+    </div>
+    <% } %>
+      </div>
+
+      <!-- Alert Modal -->
+      <%- include('../partials/alertModal') %>
+
+        <!-- Scripts necesarios -->
+        <script src="/libs/html2canvas.min.js"></script>
+        <script src="/libs/jspdf.umd.min.js"></script>
+        <script src="/js/generar-ticket-PDF.js"></script>
+        <script src="/js/ticket-print.js"></script>
+        <script src="/js/ticket-preview.js"></script>

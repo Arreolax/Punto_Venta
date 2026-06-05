@@ -1,0 +1,605 @@
+<div class="flex flex-col gap-6">
+  <%- include('../partials/alertModal') %>
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Inventario</h1>
+        <p class="text-sm text-gray-500">Control de productos, movimientos y ventas</p>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <section class="bg-white border border-gray-200 rounded-lg p-4" id="alertas">
+      <% if (canViewStocks) { %>
+        <div class="mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Alertas de inventario</h2>
+          <p class="text-xs text-gray-500">Se muestran en tiempo real</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- SIN STOCK -->
+          <div class="border border-red-200 rounded-lg overflow-hidden bg-red-50">
+            <div class="px-4 py-3 bg-red-100 border-b border-red-200">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-red-900 text-sm">Sin stock</h3>
+                <span class="inline-block px-2 py-1 bg-red-500 text-white rounded text-xs font-bold">
+                  <%= alerts.zero.length %>
+                </span>
+              </div>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <% if (alerts.zero.length===0) { %>
+                <div class="px-4 py-6 text-center text-red-600 text-sm">Sin alertas</div>
+                <% } else { %>
+                  <% alerts.zero.forEach(function(p) { %>
+                    <div class="px-4 py-3 border-b border-red-100 hover:bg-red-100 text-sm">
+                      <div class="font-medium text-red-900">
+                        <%= p.sku %> - <%= p.name %>
+                      </div>
+                      <div class="text-xs text-red-700">Stock: <%= p.stock %>
+                      </div>
+                    </div>
+                    <% }) %>
+                      <% } %>
+            </div>
+          </div>
+
+          <!-- BAJO STOCK -->
+          <div class="border border-yellow-200 rounded-lg overflow-hidden bg-yellow-50">
+            <div class="px-4 py-3 bg-yellow-100 border-b border-yellow-200">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-yellow-900 text-sm">Bajo stock</h3>
+                <span class="inline-block px-2 py-1 bg-yellow-500 text-white rounded text-xs font-bold">
+                  <%= alerts.low.length %>
+                </span>
+              </div>
+            </div>
+            <div class="max-h-60 overflow-y-auto">
+              <% if (alerts.low.length===0) { %>
+                <div class="px-4 py-6 text-center text-yellow-600 text-sm">Sin alertas</div>
+                <% } else { %>
+                  <% alerts.low.forEach(function(p) { %>
+                    <div class="px-4 py-3 border-b border-yellow-100 hover:bg-yellow-100 text-sm">
+                      <div class="font-medium text-yellow-900">
+                        <%= p.sku %> - <%= p.name %>
+                      </div>
+                      <div class="text-xs text-yellow-700">Stock: <%= p.stock %> (Mínimo: <%= p.minStock %>)</div>
+                    </div>
+                    <% }) %>
+                      <% } %>
+            </div>
+          </div>
+
+          <!-- VALOR TOTAL INVENTARIO -->
+          <div class="border border-blue-200 rounded-lg overflow-hidden bg-blue-50">
+            <div class="px-4 py-3 bg-blue-100 border-b border-blue-200">
+              <h3 class="font-semibold text-blue-900 text-sm">Valor total</h3>
+            </div>
+            <div class="px-4 py-6 text-center">
+              <div class="text-3xl font-bold text-blue-900">$<%= Number(metrics.totalValue || 0).toLocaleString() %>
+              </div>
+              <div class="text-xs text-blue-700 mt-2">
+                <%= metrics.totalProducts || 0 %> productos registrados
+              </div>
+            </div>
+          </div>
+        </div>
+        <% } else { %>
+          <div class="px-4 py-6 text-center text-gray-500 text-sm">
+            <i class="fa-solid fa-lock mr-2 text-[#FF5100]"></i> No tienes permiso para ver las alertas de inventario
+          </div>
+          <% } %>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="xl:col-span-2 flex flex-col gap-6">
+        <!-- TABLA PRODUCTOS -->
+        <div id="inventoryResults" class="bg-white border border-gray-200 rounded-lg">
+          <div class="flex items-center justify-between px-4 py-3 border-b flex-wrap gap-2">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Lista de productos</h2>
+              <p class="text-xs text-gray-500">
+                <%= pagination.total %> productos
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-sm">
+              <% if (canCreateWarehouses) { %>
+                <form method="GET" action="/inventario">
+                  <input type="hidden" name="new" value="1" />
+                </form>
+                <% } %>
+                  <form method="GET" action="/inventario/productos/export">
+                    <input type="hidden" name="format" value="excel" />
+                    <button type="submit"
+                      class="px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500">Exportar</button>
+                  </form>
+                  <a href="/inventario/importar"
+                    class="px-3 py-1.5 border border-gray-300 rounded-md inline-block hover:bg-gray-50">Importar</a>
+            </div>
+          </div>
+
+          <!-- BÚSQUEDA Y FILTROS -->
+          <div class="px-4 py-3 border-b bg-gray-50">
+            <form id="inventoryFilters" method="GET" action="/inventario"
+              class="flex flex-wrap gap-2 items-end text-sm">
+              <div class="flex-1 min-w-[200px]">
+                <label class="text-xs font-semibold text-gray-600 block mb-1">Buscar</label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#FF5100]">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                  </span>
+                  <input id="inventorySearch" name="search" value="<%= filters.search %>"
+                    class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="SKU o nombre" />
+                </div>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-gray-600 block mb-1">Estado</label>
+                <select name="status"
+                  class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option value="Todos">Todos</option>
+                  <option value="En venta" <%=filters.status==='En venta' ? 'selected' : '' %>>En venta</option>
+                  <option value="Bajo stock" <%=filters.status==='Bajo stock' ? 'selected' : '' %>>Bajo stock</option>
+                  <option value="Sin stock" <%=filters.status==='Sin stock' ? 'selected' : '' %>>Agotados</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm min-w-[1400px]">
+              <thead class="bg-gray-50 text-gray-600">
+                <tr>
+                  <th class="text-left px-4 py-3">SKU</th>
+                  <th class="text-left px-4 py-3">Producto</th>
+                  <th class="text-left px-4 py-3">Descripción breve</th>
+                  <th class="text-left px-4 py-3">Categoría</th>
+                  <% if (canViewStocks) { %>
+                    <th class="text-left px-4 py-3">Stock</th>
+                    <% } %>
+                      <th class="text-left px-4 py-3">Precio</th>
+                      <th class="text-left px-4 py-3">Estado</th>
+                      <th class="text-left px-4 py-3 whitespace-nowrap">Editar</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <% if (products.length===0) { %>
+                  <tr>
+                    <td colspan="<%= canViewStocks ? 8 : 7 %>" class="px-4 py-6 text-center text-gray-500">Sin productos
+                    </td>
+                  </tr>
+                  <% } %>
+                    <% products.forEach(function(p){ %>
+                      <tr
+                        class="<%= p.stock === 0 ? 'bg-red-50' : (p.stock <= p.minStock ? 'bg-yellow-50' : '') %> hover:bg-gray-50">
+                        <td class="px-4 py-3 font-semibold <%= p.stock === 0 ? 'text-red-700' : '' %>">
+                          <%= p.sku %>
+                        </td>
+                        <td class="px-4 py-3 font-medium">
+                          <%= p.name %>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-500">
+                          <%= p.description || 'Sin descripción' %>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                          <%= p.category %>
+                        </td>
+                        <% if (canViewStocks) { %>
+                          <td
+                            class="px-4 py-3 text-center font-semibold <%= p.stock === 0 ? 'text-red-700' : (p.stock <= p.minStock ? 'text-yellow-700' : 'text-green-700') %>">
+                            <%= p.stock %>
+                          </td>
+                          <% } %>
+                            <td class="px-4 py-3 text-right">$<%= p.price.toLocaleString('es-MX') %>
+                            </td>
+                            <td class="px-4 py-3">
+                              <% if (p.stock===0) { %>
+                                <span
+                                  class="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-center text-xs font-semibold">Agotado</span>
+                                <% } else if (p.stock <=p.minStock) { %>
+                                  <span
+                                    class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-center text-xs font-semibold">Bajo</span>
+                                  <% } else { %>
+                                    <% const statusLabel=p.status || 'En venta' ; %>
+                                      <span
+                                        class="inline-block px-2 py-1 rounded text-center text-xs font-semibold <%= statusLabel === 'Pausado' ? 'bg-gray-100 text-gray-700' : 'bg-green-100 text-green-700' %>">
+                                        <%= statusLabel==='Pausado' ? 'Pausado' : 'Venta' %>
+                                      </span>
+                                      <% } %>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                              <% if (canEdit) { %>
+                                <a href="/inventario?editId=<%= p.id %>#producto-form"
+                                  class=" hover:text-[#d94400] font-semibold"><i class="fa-solid fa-pen"></i></a>
+                                <% } else { %>
+                                  <span class="text-xs text-gray-400">-</span>
+                                  <% } %>
+                            </td>
+                      </tr>
+                      <% }) %>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 text-sm text-gray-600">
+            <span>Mostrando <%= products.length %> de <%= pagination.total %> productos</span>
+            <% const paginationQuery=[ ['search', filters.search], ['category', filters.category], ['status',
+              filters.status], ['sortBy', filters.sortBy], ['pageSize', pagination.pageSize] ]; %>
+              <div class="flex items-center gap-2">
+                <% if (pagination.page> 1) { %>
+                  <form method="GET" action="/inventario">
+                    <input type="hidden" name="page" value="<%= pagination.page - 1 %>" />
+                    <% paginationQuery.forEach(function(filter) { %>
+                      <input type="hidden" name="<%= filter[0] %>" value="<%= filter[1] %>" />
+                      <% }) %>
+                        <button type="submit" class="px-3 py-1.5 border rounded-md">Anterior</button>
+                  </form>
+                  <% } %>
+                    <% if (pagination.page * pagination.pageSize < pagination.total) { %>
+                      <form method="GET" action="/inventario">
+                        <input type="hidden" name="page" value="<%= pagination.page + 1 %>" />
+                        <% paginationQuery.forEach(function(filter) { %>
+                          <input type="hidden" name="<%= filter[0] %>" value="<%= filter[1] %>" />
+                          <% }) %>
+                            <button type="submit" class="px-3 py-1.5 border rounded-md">Siguiente</button>
+                      </form>
+                      <% } %>
+              </div>
+          </div>
+        </div>
+
+        <!-- MOVIMIENTOS Y REPORTES - SECCIÓN SECUNDARIA -->
+        <details id="inventoryMovementsSection" class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <summary class="cursor-pointer px-6 py-4 font-bold text-gray-900 flex items-center gap-2 hover:bg-gray-50">
+            <i class="fa-solid fa-chevron-right text-gray-500"></i>
+            Movimientos recientes
+          </summary>
+          <div class="px-6 py-4 border-t">
+            <form method="GET" action="/inventario" class="flex flex-wrap gap-2 mb-4 text-sm">
+              <input type="date" name="mov_from" value="<%= movementFilters.from %>"
+                class="calendar-orange px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <input type="date" name="mov_to" value="<%= movementFilters.to %>"
+                class="calendar-orange px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <select name="mov_type"
+                class="px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <option value="Todos">Todos</option>
+                <% movementTypes.entry.forEach(function(option){ %>
+                  <option value="<%= option %>" <%=movementFilters.type===option ? 'selected' : '' %>><%= option %>
+                  </option>
+                  <% }) %>
+                    <% movementTypes.exit.forEach(function(option){ %>
+                      <option value="<%= option %>" <%=movementFilters.type===option ? 'selected' : '' %>><%= option %>
+                      </option>
+                      <% }) %>
+              </select>
+              <button type="submit"
+                class="px-3 py-1 bg-[#FF5100] text-white rounded text-xs font-semibold hover:bg-[#d94400] focus:outline-none focus:ring-2 focus:ring-orange-500">Filtrar</button>
+            </form>
+            <div class="overflow-x-auto text-sm">
+              <table class="min-w-full">
+                <thead class="bg-gray-50 text-xs">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Fecha</th>
+                    <th class="px-3 py-2 text-left">Tipo</th>
+                    <th class="px-3 py-2 text-left">Cant.</th>
+                    <th class="px-3 py-2 text-left">Responsable</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y text-xs">
+                  <% if (movements.length===0) { %>
+                    <tr>
+                      <td colspan="4" class="px-3 py-3 text-gray-500 text-center">Sin movimientos</td>
+                    </tr>
+                    <% } %>
+                      <% movements.slice(0, 5).forEach(function(m){ %>
+                        <tr class="hover:bg-gray-50">
+                          <td class="px-3 py-2 text-gray-500">
+                            <%= new Date(m.date).toLocaleDateString('es-MX') %>
+                          </td>
+                          <td class="px-3 py-2"><span
+                              class="font-semibold <%= m.category === 'entrada' ? 'text-green-700' : 'text-red-700' %>">
+                              <%= m.type %>
+                            </span></td>
+                          <td class="px-3 py-2">
+                            <%= m.qty %>
+                          </td>
+                          <td class="px-3 py-2 text-gray-600">
+                            <%= m.owner || '-' %>
+                          </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <!-- GRÁFICA VENTAS -->
+        <div class="bg-white border border-gray-200 rounded-lg">
+          <div class="px-6 py-4 border-b">
+            <h2 class="text-lg font-semibold text-gray-900">Ventas por mes</h2>
+            <p class="text-xs text-gray-500">Últimos 6 meses</p>
+          </div>
+          <div class="p-6">
+            <canvas id="salesChart" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR DERECHO: ACCIONES PRINCIPALES -->
+      <div class="flex flex-col gap-4">
+        <!-- EDITAR/AGREGAR PRODUCTO -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm" id="producto-form">
+          <div class="px-6 py-4 border-b bg-[#f3eee4]">
+            <h3 class="font-bold text-gray-900">
+              <% if (editProduct) { %>
+                <span class="inline-flex items-center gap-1.5">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                  <span> Editando:
+                    <%= editProduct.sku %>
+                  </span>
+                </span>
+                <% } else { %>
+                  <span class="inline-flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Nuevo</span>
+                  </span>
+                  <% } %>
+            </h3>
+            <% if (editProduct && !canModifyWarehouses) { %>
+              <p class="text-xs text-gray-500 mt-2">No tienes permiso para modificar almacenes</p>
+              <% } %>
+                <% if (!editProduct && !canCreateWarehouses) { %>
+                  <p class="text-xs text-gray-500 mt-2">Solo Administrador puede crear almacenes</p>
+                  <% } %>
+          </div>
+          <form method="POST"
+            action="<%= editProduct ? '/inventario/productos/' + editProduct.id : '/inventario/productos' %>"
+            class="p-6 space-y-3">
+            <% const canSubmitProductForm=editProduct ? canModifyWarehouses : canCreateWarehouses; %>
+              <!-- <input type="hidden" name="onlyStatus" value="1"/> -->
+              <% if (!editProduct) { %>
+                <div>
+                  <label class="text-xs font-bold text-gray-700 block mb-1">SKU</label>
+                  <input name="sku" value="<%= editProduct ? editProduct.sku : '' %>"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 <%= editProduct ? 'bg-gray-100' : '' %>"
+                    placeholder="RW-0000" <%=canSubmitProductForm ? '' : 'disabled' %>/>
+                </div>
+
+                <div>
+                  <label class="text-xs font-bold text-gray-700 block mb-1">Nombre</label>
+                  <input name="name" value="<%= editProduct ? editProduct.name : '' %>"
+                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 <%= editProduct ? 'bg-gray-100' : '' %>"
+                    placeholder="Nombre" <%=canSubmitProductForm ? (editProduct ? 'readonly' : '' ) : 'disabled' %>/>
+                </div>
+
+                <% } %>
+
+                  <div>
+                    <label class="text-xs font-bold text-gray-700 block mb-1">Categoría</label>
+                    <select name="category"
+                      class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      <%=canSubmitProductForm ? '' : 'disabled' %>>
+                      <option value="">-- Seleccionar --</option>
+                      <% categories.forEach(function(c){ %>
+                        <option value="<%= c.id %>" <%=editProduct && editProduct.categoryId===c.id ? 'selected' : '' %>
+                          ><%= c.name %>
+                        </option>
+                        <% }) %>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-xs font-bold text-gray-700 block mb-1">Unidad para factura / clave SAT</label>
+                    <select name="satUnidadId"
+                      class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      <%=canSubmitProductForm ? '' : 'disabled' %>>
+                      <option value="">-- Sin unidad SAT --</option>
+                      <% satUnits.forEach(function(u){ %>
+                        <option value="<%= u.id %>" <%=editProduct && Number(editProduct.satUnidadId)===Number(u.id)
+                          ? 'selected' : '' %>><%= u.clave %> - <%= u.descripcion %>
+                        </option>
+                        <% }) %>
+                    </select>
+                    <p class="mt-1 text-[11px] text-gray-500">Se usará en la factura electrónica como unidad de medida.
+                    </p>
+                  </div>
+                  <div>
+                    <label class="text-xs font-bold text-gray-700 block mb-1">Clave SAT del producto / servicio</label>
+                    <input name="satClaveProd" value="<%= editProduct ? (editProduct.satClaveProd || '') : '' %>"
+                      class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      placeholder="Ej. 10101504" <%=canSubmitProductForm ? '' : 'disabled' %>/>
+                    <p class="mt-1 text-[11px] text-gray-500">Clave SAT de catálogo para facturación. Ejemplo: 10101504.
+                    </p>
+                  </div>
+                  <% if (!editProduct) { %>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Costo</label>
+                        <input name="cost" value="<%= editProduct ? editProduct.cost : '' %>"
+                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="$0" <%=canSubmitProductForm ? (editProduct ? 'readonly' : '' ) : 'disabled' %>/>
+                      </div>
+                      <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Precio</label>
+                        <input name="price" value="<%= editProduct ? editProduct.price : '' %>"
+                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="$0" <%=canSubmitProductForm ? (editProduct ? 'readonly' : '' ) : 'disabled' %>/>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Stock</label>
+                        <input name="stock" value="<%= editProduct ? editProduct.stock : '' %>"
+                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="0" <%=canSubmitProductForm ? (editProduct ? 'readonly' : '' ) : 'disabled' %>/>
+                      </div>
+                      <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Mínimo</label>
+                        <input name="minStock" value="<%= editProduct ? editProduct.minStock : '' %>"
+                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          placeholder="0" <%=canSubmitProductForm ? (editProduct ? 'readonly' : '' ) : 'disabled' %>/>
+                      </div>
+                    </div>
+                    <% } %>
+                      <div>
+                        <label class="text-xs font-bold text-gray-700 block mb-1">Estado</label>
+                        <select name="status"
+                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          <%=canSubmitProductForm ? '' : 'disabled' %>>
+                          <option value="En venta" <%=editProduct && editProduct.status==='En venta' ? 'selected' : ''
+                            %>>En
+                            venta</option>
+                          <option value="Pausado" <%=editProduct && editProduct.status==='Pausado' ? 'selected' : '' %>
+                            >Pausado</option>
+                        </select>
+                      </div>
+                      <div class="flex gap-2 pt-2">
+                        <% if (canSubmitProductForm) { %>
+                          <button type="submit"
+                            class="flex-1 px-3 py-2 text-white rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-500 <%= editProduct ? 'bg-[#FF5100] hover:bg-[#d94400]' : 'bg-[#FF5100] hover:bg-[#d94400]' %>">
+                            <%= editProduct ? 'Actualizar' : 'Crear' %>
+                          </button>
+                          <% if (editProduct) { %>
+                            <a href="/inventario"
+                              class="flex-1 px-3 py-2 border border-gray-300 rounded text-sm text-center hover:bg-gray-50">Cancelar</a>
+                            <% } %>
+                              <% } %>
+                      </div>
+          </form>
+        </div>
+
+        <!-- REGISTRAR MOVIMIENTO -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="px-6 py-4 border-b bg-orange-50">
+            <h3 class="font-bold text-gray-900">Movimiento</h3>
+            <% if (!canManageAllMovements && canDeleteInventory) { %>
+              <p class="text-xs text-gray-500 mt-2">Solo puedes registrar movimientos de tipo Eliminación</p>
+              <% } else if (!canManageAllMovements && !canDeleteInventory) { %>
+                <p class="text-xs text-gray-500 mt-2">No tienes permisos para registrar movimientos</p>
+                <% } %>
+          </div>
+          <form method="POST" action="/inventario/movimientos" class="p-6 space-y-3">
+            <div>
+              <label class="text-xs font-bold text-gray-700 block mb-1">Producto</label>
+              <select name="productId"
+                class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <% products.slice(0, 10).forEach(function(p){ %>
+                  <option value="<%= p.id %>">
+                    <%= p.sku %> - <%= p.name.substring(0, 20) %>
+                  </option>
+                  <% }) %>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs font-bold text-gray-700 block mb-1">Cantidad</label>
+                <input name="quantity" type="number"
+                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  placeholder="0" />
+              </div>
+              <div>
+                <label class="text-xs font-bold text-gray-700 block mb-1">Tipo</label>
+                <select name="movementType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required <%=(!canManageAllMovements && !canDeleteInventory) ? 'disabled' : '' %>>
+                  <option value="">-- Seleccionar --</option>
+                  <% if (canManageAllMovements) { %>
+                    <optgroup label="Entradas">
+                      <% movementTypes.entry.forEach(function(option){ %>
+                        <option value="<%= option %>">
+                          <%= option %>
+                        </option>
+                        <% }) %>
+                    </optgroup>
+                    <optgroup label="Salidas">
+                      <% movementTypes.exit.forEach(function(option){ %>
+                        <option value="<%= option %>">
+                          <%= option %>
+                        </option>
+                        <% }) %>
+                    </optgroup>
+                    <% } else if (canDeleteInventory) { %>
+                      <optgroup label="Salidas">
+                        <option value="Eliminación">Eliminación</option>
+                      </optgroup>
+                      <% } %>
+                </select>
+              </div>
+            </div>
+            <button type="submit"
+              class="w-full px-3 py-2 bg-[#FF5100] text-white rounded text-sm font-bold hover:bg-[#d94400] focus:outline-none focus:ring-2 focus:ring-orange-500 <%= (!canManageAllMovements && !canDeleteInventory) ? 'opacity-50 cursor-not-allowed' : '' %>"
+              <%=(!canManageAllMovements && !canDeleteInventory) ? 'disabled' : '' %>>Registrar</button>
+          </form>
+        </div>
+
+        <!-- ACCIONES RÁPIDAS -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+          <h3 class="font-bold text-gray-900 mb-3 text-sm">Reportes</h3>
+          <div class="space-y-2">
+            <a href="/inventario/importar"
+              class="block px-3 py-2 bg-[#FF2A00] text-white rounded text-sm font-semibold text-center hover:bg-orange-700">
+              Importar
+            </a>
+            <form method="GET" action="/inventario/reportes/export">
+              <input type="hidden" name="format" value="excel" />
+              <button type="submit"
+                class="w-full px-3 py-2 text-white rounded text-sm font-semibold bg-[#FF5100] hover:bg-[#d94400] focus:outline-none focus:ring-2 focus:ring-orange-500">
+                Exportar movimientos
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+</div>
+
+<% if (messages && messages.error) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.mostrarAlerta) window.mostrarAlerta('error', '<%- JSON.stringify(messages.error) %>');
+    });
+  </script>
+  <% } %>
+    <% if (messages && messages.success) { %>
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          if (window.mostrarAlerta) window.mostrarAlerta('success', '<%= messages.success %>');
+        });
+      </script>
+      <% } %>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+        <script>
+          const salesData = <%- JSON.stringify(salesChart || []) %>;
+          const monthSet = new Set();
+          const productMap = {};
+          salesData.forEach((row) => {
+            monthSet.add(row.month);
+            if (!productMap[row.product]) productMap[row.product] = {};
+            productMap[row.product][row.month] = Number(row.qty || 0);
+          });
+          const labels = Array.from(monthSet).sort();
+          const palette = ['#111827', '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6'];
+          const datasets = Object.keys(productMap).map((product, index) => ({
+            label: product,
+            data: labels.map((month) => productMap[product][month] || 0),
+            borderColor: palette[index % palette.length],
+            backgroundColor: 'rgba(17,24,39,0.1)',
+            tension: 0.3
+          }));
+          const ctx = document.getElementById('salesChart');
+          if (ctx) {
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom' }
+                }
+              }
+            });
+          }
+        </script>
+        <script src="/js/inventario.js"></script>

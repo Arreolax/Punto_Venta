@@ -1,0 +1,253 @@
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando Facturas...' }) %>
+  <%- include('../partials/alertModal') %>
+
+    <div id="contenido" class="hidden">
+      <div class="flex flex-col gap-6">
+
+        <!-- Encabezado -->
+        <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 class="font-bold text-3xl">Historial de Facturas</h1>
+            <p class="text-sm text-gray-500">Consulta y gestiona todos los comprobantes fiscales generados.</p>
+          </div>
+          <a href="/facturas/nueva"
+            class="flex items-center gap-2 px-4 py-2 bg-[#FF5100] text-white rounded-md text-sm font-semibold hover:bg-[#d94400] self-start md:self-auto">
+            <i class="fa-solid fa-plus text-xs"></i>
+            Nueva Factura
+          </a>
+        </div>
+
+        <!-- Filtros -->
+        <form id="formFiltrosFacturas" method="GET" action="/facturas" class="flex flex-wrap items-center gap-2">
+
+          <div class="relative flex-1 min-w-48">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+            </span>
+            <input name="search" type="text" placeholder="Buscar por Folio o Cliente..."
+              value="<%= locals.filters && filters.search ? filters.search : '' %>"
+              class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+          </div>
+
+          <div class="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
+            <i class="fa-regular fa-calendar text-gray-400 text-xs"></i>
+            <span class="text-gray-500 text-xs">Fecha:</span>
+            <select name="fecha" class="auto-submit outline-none text-sm bg-transparent">
+              <option value="todos" <%=(!locals.filters || !filters.fecha || filters.fecha==='todos' ) ? 'selected' : ''
+                %>>Todos</option>
+              <option value="hoy" <%=(locals.filters && filters.fecha==='hoy' ) ? 'selected' : '' %>>Hoy</option>
+              <option value="semana" <%=(locals.filters && filters.fecha==='semana' ) ? 'selected' : '' %>>Esta semana
+              </option>
+              <option value="mes" <%=(locals.filters && filters.fecha==='mes' ) ? 'selected' : '' %>>Este mes</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
+            <i class="fa-solid fa-user text-gray-400 text-xs"></i>
+            <span class="text-gray-500 text-xs">Empleado:</span>
+            <select name="empleado" class="auto-submit outline-none text-sm bg-transparent">
+              <option value="todos" <%=(!locals.filters || !filters.empleado || filters.empleado==='todos' )
+                ? 'selected' : '' %>>Todos</option>
+                <% if (locals.empleados && empleados.length > 0) { %>
+                <% empleados.forEach(function(emp) { %>
+                  <option value="<%= emp.id %>" <%= (locals.filters && filters.empleado == emp.id) ? 'selected' : '' %>>
+                    <%= emp.name %> <%= emp.last_name ? emp.last_name : '' %>
+                  </option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-white">
+            <i class="fa-solid fa-filter text-gray-400 text-xs"></i>
+            <span class="text-gray-500 text-xs">Estado:</span>
+            <select name="estado" class="auto-submit outline-none text-sm bg-transparent">
+              <option value="todos" <%=(!locals.filters || !filters.estado || filters.estado==='todos' ) ? 'selected'
+                : '' %>>Todos</option>
+              <option value="timbrada" <%=(locals.filters && filters.estado==='timbrada' ) ? 'selected' : '' %>>Timbrada
+              </option>
+              <option value="borrador" <%=(locals.filters && filters.estado==='borrador' ) ? 'selected' : '' %>>Borrador
+              </option>
+              <option value="cancelada" <%=(locals.filters && filters.estado==='cancelada' ) ? 'selected' : '' %>
+                >Cancelada</option>
+            </select>
+          </div>
+
+          <button type="submit" class="hidden"></button>
+
+          <a href="/facturas"
+            class="flex items-center gap-2 px-4 py-2 bg-[#FF5100] text-white rounded-md text-sm font-semibold hover:bg-[#d94400] self-start md:self-auto">
+            Limpiar Filtros
+          </a>
+        </form>
+
+        <!-- Tabla -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-white border-b border-gray-200">
+                <tr>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Folio</th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Cliente</th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Fecha y Hora
+                  </th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Empleado</th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Total</th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Estado</th>
+                  <th class="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wide">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% if (invoices.length===0) { %>
+                  <tr>
+                    <td colspan="7" class="px-4 py-10 text-center text-gray-400">
+                      <i class="fa-solid fa-file-invoice text-4xl mb-3 block text-gray-400"></i>
+                      Sin facturas registradas
+                    </td>
+                  </tr>
+                  <% } %>
+                    <% invoices.forEach(function(f){ %>
+                      <tr class="hover:bg-gray-50 transition-colors">
+
+                        <td class="px-4 py-3 font-bold whitespace-nowrap">
+                          <%= f.ticket_number %>
+                        </td>
+
+                        <td class="px-4 py-3 font-medium text-gray-800 max-w-[160px]">
+                          <%= f.name %>
+                        </td>
+
+                        <td class="px-4 py-3 text-gray-600 text-xs leading-tight whitespace-nowrap">
+                          <span>
+                            <%= f.created_at %>
+                          </span>
+                        </td>
+
+                        <td class="px-4 py-3">
+                          <div class="flex items-center gap-2">
+                            <div
+                              class="h-7 w-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
+                              <%= f.empleado.charAt(0).toUpperCase() %>
+                            </div>
+                            <span class="text-gray-700 text-xs">
+                              <%= f.empleado %>
+                            </span>
+                          </div>
+                        </td>
+
+                        <td class="px-4 py-3 font-semibold text-gray-900 whitespace-nowrap">
+                          $<%= f.total.toLocaleString('es-MX', { minimumFractionDigits: 2 }) %>
+                        </td>
+
+                        <td class="px-4 py-3">
+                          <% if (f.status==='timbrada' ) { %>
+                            <span
+                              class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700">Timbrada</span>
+                            <% } else if (f.status==='borrador' ) { %>
+                              <span
+                                class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700">Borrador</span>
+                              <% } else if (f.status==='cancelada' ) { %>
+                                <span
+                                  class="px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700">Cancelada</span>
+                                <% } else { %>
+                                  <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600">
+                                    <%= f.status %>
+                                  </span>
+                                  <% } %>
+                        </td>
+
+                        <td class="px-4 py-3">
+                          <% if (f.status !='borrador' ) { %>
+                            <div class="flex items-center gap-3">
+                              <a href="/facturas/resumen/<%= f.id %>" title="Ver detalles"
+                                class="text-gray-600 hover:text-[#FF5100]">
+                                <i class="fa-solid fa-eye text-sm"></i>
+                              </a>
+                              <button data-id="<%= f.id %>" data-formato="pdf" title="Descargar PDF"
+                                class="btn-descargar text-gray-600 hover:text-[#d94400]">
+                                <i class="fa-regular fa-file-pdf text-sm"></i>
+                              </button>
+                              <button data-id="<%= f.id %>" data-formato="xml" title="Descargar XML"
+                                class="btn-descargar text-gray-600 hover:text-[#d94400]">
+                                <i class="fa-solid fa-file-arrow-down text-sm"></i>
+                              </button>
+                            </div>
+                            <% } else { %>
+                              <div class="flex items-center pl-7">
+                                <a href="/facturas/resumen/<%= f.id %>" title="Ver detalle"
+                                  class="text-gray-600 hover:text-[#FF5100]">
+                                  <i class="fa-solid fa-eye text-sm"></i>
+                                </a>
+                              </div>
+                              <% } %>
+
+                        </td>
+
+                      </tr>
+                      <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Resumen inferior -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-circle-check text-green-600"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Total Pagado (Mes)</p>
+              <p id="totalPagadoMes" class="text-xl font-bold text-gray-900">$--.--</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div class="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-clock text-orange-500"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Total Pendiente</p>
+              <p id="totalPendiente" class="text-xl font-bold text-gray-900">$--.--</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4">
+            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+              <i class="fa-regular fa-file-lines text-gray-600"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Facturas Emitidas Hoy</p>
+              <p id="totalEmitidasHoy" class="text-xl font-bold text-gray-900">$--.--</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <script src="/js/invoice-resume.js"></script>
+    <script>
+      async function cargarResumenFacturas() {
+        try {
+          const res = await fetch('/facturas/summary');
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const pagadoEl = document.getElementById('totalPagadoMes');
+          const pendienteEl = document.getElementById('totalPendiente');
+          const hoyEl = document.getElementById('totalEmitidasHoy');
+
+          if (pagadoEl) pagadoEl.textContent = '$' + Number(data.totalPagadoMes || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 });
+          if (pendienteEl) pendienteEl.textContent = '$' + Number(data.totalPendiente || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 });
+          if (hoyEl) hoyEl.textContent = '$' + Number(data.totalEmitidasHoy || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 });
+
+        } catch (error) {
+          console.error('Error cargando resumen de facturas:', error);
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', cargarResumenFacturas);
+    </script>

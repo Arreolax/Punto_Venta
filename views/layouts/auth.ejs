@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FF5100">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <title>Login - Punto de Venta</title>
+  <link href="/styles/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../libs/fontawesome/css/all.min.css">
+</head>
+
+<body class="h-screen bg-gray-100 overflow-hidden">
+
+  <main class="h-full overflow-auto">
+    <%- body %>
+  </main>
+ 
+  <div class="fixed bottom-0 left-0 w-full text-center text-sm text-gray-500 italic py-2 bg-gray-100">
+    <button id="btnDevs">
+      <i class="fa-solid fa-circle-info" title="Devs"></i>
+    </button>
+    Versión <%= version %>
+  </div>
+
+  <!-- Modal Devs-->
+  <div id="modalDevs" class="fixed hidden inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="relative bg-white w-full max-w-2xl rounded-lg shadow-lg p-6 animate-fadeIn">
+
+      <button id="btnCerrarModalDevs" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors"
+        title="Cerrar">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <h2 class="text-[20px] font-semibold text-gray-800 pb-3">
+        « Equipo de Desarrollo »
+      </h2>
+
+      <div class="space-y-2 text-[16px] text-gray-600">
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-briefcase"></i>
+          <span class="font-bold not-italic text-black">Guadalupe Vargas -</span>
+          <span class="font-semibold">Líder de Proyecto, Analista y Diseñador</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Alejandro Arreola -</span>
+          <span class="font-semibold">Desarrollador Principal y Tester</span>
+          <a href="https://github.com/Arreolax" target="_blank" class="text-[#FF5100] hover:underline">
+            <i class="fa-brands fa-github"></i> GitHub
+          </a>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Josue Diaz -</span>
+          <span class="font-semibold">Desarrollador, Tester y Administrador de DB</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Derek Martinez -</span>
+          <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Tomas Tellez -</span>
+          <span class="font-semibold">Desarrollador y Tester</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <i class="fa-solid fa-code"></i>
+          <span class="font-bold not-italic text-black">Euen Galindo -</span>
+          <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/global.js"></script>
+  <script src="/js/page-scripts.js"></script>
+</body>
+
+</html>

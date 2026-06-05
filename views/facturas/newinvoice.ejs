@@ -1,0 +1,636 @@
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando...' }) %>
+  <%- include('../partials/alertModal') %>
+
+    <div id="contenido" class="hidden">
+      <div class="flex flex-col gap-6">
+
+        <!-- Encabezado -->
+        <div class="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 class="font-bold text-3xl flex items-center gap-2">
+              Nueva Factura
+            </h1>
+            <p class="text-sm text-gray-500">Complete los detalles para generar su comprobante fiscal.</p>
+          </div>
+          <div class="flex gap-2">
+
+            <button id="btnNuevoCliente"
+              class="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600">
+              <i class="fa-solid fa-user-plus"></i>
+              Agregar Nuevo Cliente
+
+            </button>
+
+          </div>
+        </div>
+
+        <form id="formFactura" method="POST" action="/facturas/nueva" class="flex flex-col gap-6">
+
+          <!-- Fila 1: Emisor + Cliente -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- 1. Datos del Emisor -->
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                  <i class="fa-solid fa-building"></i>
+                  Datos del Emisor
+                </h2>
+
+                <a href="https://app.facturama.mx/Profile/TaxProfile" target="_blank"
+                  class="btnEditar items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-semibold hover:bg-blue-600">
+                  <i class="fa-solid fa-receipt"></i>
+                  Facturama
+                </a>
+              </div>
+
+              <div class=" font-bold bg-blue-100 text-blue-800 p-2 rounded mb-2 text-sm text-center">
+                La Información a Continuación es solo de Muestra.
+                <br>
+                La Actual Informacion se Encuentra en tu <a href="https://app.facturama.mx/Profile/TaxProfile"
+                  target="_blank" class="underline">Perfil de Facturama </a> .
+              </div>
+
+              <div class="grid grid-cols-1 gap-3">
+                <!-- Nombre -->
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">Nombre</label>
+                  <input name="emisor_nombre" type="text" value="<%= data_emisor.nombre %>" disabled
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none" />
+                </div>
+
+                <!-- RFC y Regimen -->
+                <div class="grid grid-cols-[3fr_3fr] gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">RFC</label>
+                    <input name="emisor_rfc" type="text" value="<%= data_emisor.rfc %>" disabled
+                      class="text-gray-600 w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Regimen Fiscal</label>
+                    <select id="emisor_regimen" name="emisor_regimen" data-selected="<%= data_emisor.regimen %>"
+                      disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-800 cursor-not-allowed focus:outline-none">
+
+                      <option value="">Cargando...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Direccion-->
+                <div class="grid grid-cols-[3fr_2fr] gap-3">
+                  <div class="col-span-2">
+                    <label class="text-xs font-semibold text-gray-600">Direccion Fiscal</label>
+                    <input value="<%= data_emisor.direccion %>" name="emisor_direccion" type="text" disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none" />
+                  </div>
+
+
+                </div>
+
+                <!-- Codigo Postal y Telefono -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">
+                      Codigo Postal
+                    </label>
+                    <input value="<%= data_emisor.cp %>" name="emisor_cp" type="text" disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Telefono</label>
+                    <input value="<%= data_emisor.telefono %>" name="emisor_telefono" type="text" disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none" />
+                  </div>
+
+
+                </div>
+
+                <!-- Correo Electronico -->
+                <div>
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Correo Electronico</label>
+                    <input value="<%= data_emisor.correo %>" name="emisor_correo" type="text" disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-gray-600 cursor-not-allowed focus:outline-none" />
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+            <!-- 2. Datos del Cliente -->
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div id="avisoPublico"
+                class="hidden font-bold bg-yellow-100 text-yellow-800 p-2 rounded mb-5 text-sm text-center">
+                Esta Venta está Registrada como Público en General.<br> Selecciona o Agrega un Nuevo Cliente para
+                Facturar.
+              </div>
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                  <i class="fa-solid fa-user"></i>
+                  Datos del Cliente
+                </h2>
+
+                <button type="button" id="editUser"
+                  class="btnEditar hidden items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md text-sm font-semibold hover:bg-orange-600">
+                  <i class="fa-solid fa-user-pen"></i>
+                  Editar Datos del Cliente
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3">
+
+                <!-- Buscador de Clientes -->
+                <div class="relative">
+                  <label class="text-xs font-semibold text-gray-600">Nombre o Razon Social</label>
+                  <input id="buscarCliente" name="cliente_nombre" type="text"
+                    value="<%= data_receptor && data_receptor.nombre_cliente ? data_receptor.nombre_cliente : '' %>"
+                    placeholder="Buscar cliente o ingresar nuevo..."
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+
+                  <div id="resultadosClientes"
+                    class="absolute top-full left-0 right-0 mt-1 border rounded bg-white shadow hidden max-h-40 overflow-y-auto z-10 text-sm">
+                  </div>
+
+                  <input id="clienteId" name="cliente_id" disabled title="ID del cliente" type="hidden" />
+                </div>
+
+                <!-- RFC y Regimen Fiscal -->
+                <div class="grid grid-cols-[3fr_3fr] gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">RFC</label>
+                    <input id="clienteRfc" name="cliente_rfc" type="text" disabled
+                      value="<%= data_receptor && data_receptor.rfc_cliente ? data_receptor.rfc_cliente : '' %>"
+                      placeholder="RFC del cliente"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed" />
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Regimen Fiscal</label>
+                    <select id="regimen_fiscal" name="regimen_fiscal" disabled
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed">
+                      <option value="">Cargando...</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Direccion -->
+                <div class="grid grid-cols-[3fr_2fr] gap-3">
+                  <div class="col-span-2">
+                    <label class="text-xs font-semibold text-gray-600">Direccion</label>
+                    <input id="clienteDireccion" name="cliente_direccion" type="text" disabled
+                      value="<%= data_receptor && data_receptor.domicilio_cliente ? data_receptor.domicilio_cliente : '' %>"
+                      placeholder="Direccion completa del cliente"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed" />
+                  </div>
+                </div>
+
+                <!-- Codigo Postal y Telefono -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Codigo Postal</label>
+                    <input id="clienteCp" name="receptor_cp" type="text" disabled
+                      value="<%= data_receptor && data_receptor.cp_cliente ? data_receptor.cp_cliente : '' %>"
+                      placeholder="Codigo Postal del cliente"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed" />
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Telefono</label>
+                    <input id="clienteTelefono" name="receptor_telefono" type="text" disabled
+                      value="<%= data_receptor && data_receptor.telefono_cliente ? data_receptor.telefono_cliente : '' %>"
+                      placeholder="Telefono del cliente"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed" />
+                  </div>
+                </div>
+
+                <!-- Correo Electronico -->
+                <div>
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Correo Electronico</label>
+                    <input id="clienteCorreo" name="receptor_correo" type="text" disabled
+                      value="<%= data_receptor && data_receptor.correo_cliente ? data_receptor.correo_cliente : '' %>"
+                      placeholder="Correo Electronico del cliente"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100] cursor-not-allowed" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Detalle de Productos / Servicios + 4. Resumen -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- 3. Conceptos -->
+            <div class="lg:col-span-2 bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                  <i class="fa-solid fa-list"></i>
+                  Detalle de Productos
+                </h2>
+                <select name="conceptos" id="conceptos" data-folio="<%= folio || '' %>"
+                  class="mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+
+                  <option value="" disabled selected>Selecciona la Venta a Facturar</option>
+                </select>
+              </div>
+
+              <div class="overflow-x-auto w-full">
+                <table class="w-full text-sm table-auto">
+                  <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                      <th class="text-left px-3 py-2">Clave SAT</th>
+                      <th class="text-left px-3 py-2">Producto</th>
+                      <th class="text-left px-3 py-2">Precio sin IVA</th>
+                      <th class="text-left px-3 py-2">IVA 16%</th>
+                      <th class="text-left px-3 py-2">Precio Unitario</th>
+                      <th class="text-left px-3 py-2">Cantidad</th>
+                      <th class="text-left px-3 py-2">Unidad</th>
+                      <th class="text-left px-3 py-2">Importe</th>
+                      <th class="px-3 py-2"></th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="tablaConceptos" class="divide-y">
+                  </tbody>
+                </table>
+              </div>
+
+              <p id="sinConceptos" class="text-center text-sm text-gray-400 py-6">
+                Sin Conceptos.
+              </p>
+            </div>
+
+            <!-- 4. Resumen de Totales -->
+            <div class="bg-white border border-gray-200 rounded-lg p-5 flex flex-col gap-4">
+              <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-calculator"></i>
+                Resumen de Totales
+              </h2>
+
+              <div class="flex flex-col gap-3 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Subtotal</span>
+                  <span id="resumenSubtotal" class="font-semibold">$-.--</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">IVA (16%)</span>
+                  <span id="resumenIva" class="font-semibold">$-.--</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Descuentos</span>
+                  <span id="resumenDescuentos" class="font-semibold">-$-.--</span>
+                </div>
+                <div class="border-t pt-3 flex justify-between items-center">
+                  <span class="font-bold text-gray-900">Total a pagar</span>
+                  <span id="resumenTotal" class="text-xl font-bold text-[#FF5100]">$-.--</span>
+                </div>
+              </div>
+
+              <div class="mt-auto flex flex-col gap-2 pt-4 border-t">
+                <button id="btnTimbrar"
+                  class="btnTimbrar w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FF5100] text-white rounded-md text-sm font-semibold hover:bg-[#d94400]">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span id="btnTextT">
+                    Generar y Timbrar CFDI
+                  </span>
+                </button>
+
+                <button id="btnBorrador"
+                  class="btnBorrador w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-50">
+                  <i class="fa-regular fa-floppy-disk text-black"></i>
+                  Guardar como Borrador
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Datos de la Factura -->
+          <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-file-invoice"></i>
+              Datos de la Factura
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- 
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Folio de Factura</label>
+                <input name="folio" type="text" placeholder="F-2024-001"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Fecha de emision</label>
+                <input name="fecha_emision" type="date"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+              </div>
+-->
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Moneda</label>
+                <select name="moneda" id="moneda"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+                  <option disabled selected value="">Selecciona una Moneda...</option>
+                  <option value="MXN">MXN - Peso Mexicano</option>
+                  <option value="USD">USD - Dolar Americano</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Tipo de comprobante</label>
+                <select name="tipo_comprobante" id="tipo_comprobante"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+                  <option disabled selected value="">Selecciona un Tipo de Comprobante...</option>
+                  <option value="I">I - Ingreso</option>
+                  <option value="E">E - Egreso</option>
+                  <option value="T">T - Traslado</option>
+                  <option value="P">P - Pago</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Metodo de pago</label>
+                <select name="metodo_pago" id="metodo_pago"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+                  <option disabled selected value="">Selecciona el Metodo de Pago...</option>
+                  <option value="PUE">PUE - Pago en una sola exhibicion</option>
+                  <option value="PPD">PPD - Pago en parcialidades o diferido</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Forma de pago</label>
+                <select id="forma_pago" name="forma_pago" disabled
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+                  <option disabled selected value="">Selecciona la Forma de Pago...</option>
+                  <option value="01">01 - Efectivo</option>
+                  <option value="02">02 - Cheque Nominativo</option>
+                  <option value="03">03 - Transferencia Electronica</option>
+                  <option value="04">04 - Tarjeta de Credito</option>
+                  <option value="28">28 - Tarjeta de Debito</option>
+                  <option value="99">99 - Por Definir</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Uso del CFDI</label>
+                <select id="cfdi" name="cfdi"
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+
+                  <option value="">Cargando...</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 6. Informacion Fiscal (CFDI) (oculto por solicitud) -->
+          <div class="hidden bg-white border border-gray-200 rounded-lg p-5">
+            <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-[#FF5100]"></i>
+              Informacion Fiscal (CFDI)
+            </h2>
+            <div class="grid grid-cols-1 gap-3">
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Folio Fiscal (UUID)</label>
+                <input name="uuid" type="text" placeholder="Xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" disabled
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-black cursor-not-allowed focus:outline-none" />
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">Fecha de timbrado</label>
+                  <input name="fecha_timbrado" type="datetime-local" disabled
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-black cursor-not-allowed focus:outline-none" />
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">No. Certificado SAT</label>
+                  <input name="no_certificado_sat" type="text" placeholder="00001000000504445028" disabled
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-black cursor-not-allowed focus:outline-none" />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Sello Digital del SAT</label>
+                <textarea name="sello_sat" rows="3" placeholder="Sello digital del SAT..." disabled
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-black cursor-not-allowed focus:outline-none resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-gray-600">Cadena Original del Complemento</label>
+                <textarea name="cadena_original" rows="3"
+                  placeholder="Cadena original del complemento de certificacion digital del SAT..." disabled
+                  class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 text-black cursor-not-allowed focus:outline-none resize-none"></textarea>
+              </div>
+
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Modal Form -->
+      <div id="modalCliente" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white w-full max-w-3xl rounded-xl shadow-lg relative overflow-hidden">
+
+          <!-- Header naranja -->
+          <div class="bg-orange-500 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="bg-white/20 rounded-lg p-2">
+                <i class="fa-solid fa-user-plus text-white text-sm"></i>
+              </div>
+              <div>
+                <h2 id="tituloModal" class="text-white font-bold text-lg leading-tight">
+                  Nuevo Cliente</h2>
+                <p class="text-orange-100 text-xs">Completa la Informacion
+                </p>
+              </div>
+            </div>
+            <button id="cerrarModal" class="text-white/70 hover:text-white transition-colors">
+              <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+          </div>
+
+          <div class="flex gap-0">
+
+            <!-- Formulario -->
+            <form id="formCliente" class="flex-1 p-6">
+              <input type="hidden" id="clienteId" disabled class="hidden">
+
+              <div class="grid grid-cols-1 gap-3">
+
+                <!-- Nombre -->
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">Nombre o Razón
+                    Social</label>
+                  <input required id="nombre" type="text" placeholder="Ej. Soluciones Tecnológicas S.A. de C.V."
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                </div>
+
+                <!-- RFC y Régimen -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">RFC</label>
+                    <input required id="rfc" type="text" placeholder="ABCD010101XYZ" maxlength="13"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                    <p id="rfc-error" class="text-red-500 text-xs mt-1 hidden">RFC
+                      inválido
+                    </p>
+                  </div>
+
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Régimen
+                      Fiscal</label>
+                    <select required id="cliente_regimen_fiscal" name="cliente_regimen_fiscal"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]">
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Dirección -->
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">Dirección (Opcional)</label>
+                  <input id="direccion" type="text" placeholder="Calle, número, colonia, municipio y estado"
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                </div>
+
+                <!-- CP y Teléfono -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Código
+                      Postal</label>
+                    <input required id="codigo_postal" type="text" inputmode="numeric" placeholder="34000"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-gray-600">Teléfono</label>
+                    <input required id="telefono" type="text" inputmode="numeric" placeholder="618 000 0000"
+                      class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                  </div>
+                </div>
+
+                <!-- Correo -->
+                <div>
+                  <label class="text-xs font-semibold text-gray-600">Correo
+                    Electrónico</label>
+                  <input required id="email" type="email" placeholder="cliente@empresa.com"
+                    class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#FF5100]" />
+                </div>
+
+              </div>
+
+              <!-- Botones -->
+              <div class="flex justify-end gap-2 mt-5 pt-4 border-t border-gray-100">
+                <button type="button" id="cancelar"
+                  class="px-4 py-2 text-sm border border-gray-300 text-gray-700 rounded-md font-semibold hover:bg-gray-50">
+                  Cancelar
+                </button>
+                <button type="submit" id="btnGuardar"
+                  class="flex items-center gap-2 px-4 py-2 text-sm bg-[#FF5100] text-white rounded-md font-semibold hover:bg-[#d94400]">
+                  <i class="fa-solid fa-user-plus"></i>
+                  Guardar Cliente
+                </button>
+              </div>
+            </form>
+
+            <!-- Panel lateral -->
+            <div class="w-56 bg-gray-50 border-l border-gray-200 p-4 flex flex-col gap-4">
+
+              <!-- Consejo -->
+              <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p class="text-xs font-bold text-orange-600 flex items-center gap-1 mb-1">
+                  <i class="fa-solid fa-circle-info"></i>
+                  Consejo Rápido
+                </p>
+                <p class="text-xs text-orange-700 leading-relaxed">
+                  Asegúrate de que el RFC coincida con la Constancia de Situación Fiscal
+                  para evitar futuros errores de timbrado.
+                </p>
+              </div>
+
+              <!-- Progreso -->
+              <div id="progresoModal">
+
+                <div class="flex justify-between items-center mb-1">
+                  <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Progreso</p>
+                  <span id="modalPorcentaje" class="text-xs font-semibold text-[#FF5100]">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                  <div id="modalBarra" class="bg-[#FF5100] h-1.5 rounded-full transition-all duration-300"
+                    style="width:0%"></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2" id="modal-check-basicos">
+                    <i class="fa-regular fa-circle-check text-gray-300 text-sm"></i>
+                    <span class="text-xs text-gray-400">Datos Básicos</span>
+                  </div>
+                  <div class="flex items-center gap-2" id="modal-check-contacto">
+                    <i class="fa-regular fa-circle-check text-gray-300 text-sm"></i>
+                    <span class="text-xs text-gray-400">Contacto</span>
+                  </div>
+                  <div class="flex items-center gap-2" id="modal-check-fiscal">
+                    <i class="fa-regular fa-circle-check text-gray-300 text-sm"></i>
+                    <span class="text-xs text-gray-400">Datos Fiscales</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Confirmar Factura -->
+      <div id="modalConfirmInvoice" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+        <div class="bg-white w-11/12 rounded-lg shadow-lg p-6 animate-fadeIn flex flex-col">
+
+          <h2 class="text-lg font-semibold text-gray-800">
+            Confirmar Datos
+          </h2>
+
+          <p class="text-sm text-gray-600 pb-2">
+            Verifica que los datos sean correctos.
+          </p>
+
+          <div id="dataInvoice" class="overflow-y-auto max-h-[75vh] pr-2">
+          </div>
+
+          <!-- Footer fijo -->
+          <div class="flex justify-end gap-3 mt-6">
+            <button id="btnCancelarInvoice" class="px-4 py-2 text-sm rounded border hover:bg-gray-100">
+              Cancelar
+            </button>
+
+            <button id="btnConfirmInvoice" class="px-4 py-2 text-sm rounded bg-[#FF5100] text-white hover:bg-[#d94400]">
+              Confirmar
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal de Carga -->
+      <div id="modalGenerando" class="hidden fixed flex inset-0 bg-black/50 items-center justify-center z-50">
+
+        <div class="bg-white w-full max-w-md rounded-lg shadow-lg p-6 animate-fadeIn text-center">
+
+          <h2 id="textoCarga" class="text-lg font-semibold text-gray-800 pb-5">
+            Generando Factura...
+          </h2>
+
+          <div class="flex items-center justify-center pb-5">
+            <div class="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-orange-600"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="/js/new-invoice.js"></script>

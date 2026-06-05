@@ -1,0 +1,485 @@
+<!-- Activity Logs Admin Dashboard -->
+<div class="container mx-auto p-6">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Registro de Actividad</h1>
+    <p class="text-gray-600">Monitorea todas las acciones de usuarios en el sistema</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">Filtros</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Filtro por módulo -->
+      <div>
+        <label for="moduleFilter" class="block text-sm font-medium text-gray-700 mb-2">
+          Módulo
+        </label>
+        <select 
+          id="moduleFilter" 
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Todos</option>
+          <option value="auth">Autenticación</option>
+          <option value="admin">Administración</option>
+          <option value="profile">Perfil</option>
+          <option value="general">General</option>
+        </select>
+      </div>
+
+      <!-- Filtro por fecha inicial -->
+      <div>
+        <label for="startDateFilter" class="block text-sm font-medium text-gray-700 mb-2">
+          Desde
+        </label>
+        <input 
+          type="datetime-local" 
+          id="startDateFilter" 
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+      </div>
+
+      <!-- Filtro por fecha final -->
+      <div>
+        <label for="endDateFilter" class="block text-sm font-medium text-gray-700 mb-2">
+          Hasta
+        </label>
+        <input 
+          type="datetime-local" 
+          id="endDateFilter" 
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+      </div>
+
+      <!-- Búsqueda por usuario -->
+      <div>
+        <label for="userSearch" class="block text-sm font-medium text-gray-700 mb-2">
+          Usuario
+        </label>
+        <select 
+          id="userFilter" 
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Todos</option>
+          <% if (users && users.length > 0) { %>
+            <% users.forEach(u => { %>
+              <option value="<%= u.id %>"><%= u.username %></option>
+            <% }); %>
+          <% } %>
+        </select>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="flex gap-2 mt-4">
+      <button 
+        id="applyFilters" 
+        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+      >
+        Aplicar Filtros
+      </button>
+      <button 
+        id="clearFilters" 
+        class="px-6 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition font-medium"
+      >
+        Limpiar
+      </button>
+      <button 
+        id="exportLogs" 
+        class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+      >
+        Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabla de logs -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Header con información -->
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-900">
+        Total de registros: <span id="logCount" class="text-blue-600">0</span>
+      </h3>
+      <div class="text-sm text-gray-600">
+        Última actualización: <span id="lastUpdate">--:--</span>
+      </div>
+    </div>
+
+    <!-- Tabla responsive -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-100 border-b border-gray-300">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Usuario</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Acción</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Módulo</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Fecha/Hora</th>
+            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Detalles</th>
+          </tr>
+        </thead>
+        <tbody id="logsTableBody" class="divide-y divide-gray-200">
+          <!-- Los logs se cargarán aquí dinámicamente -->
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+              Cargando registros...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación (simple: solo siguiente/anterior) -->
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+      <div class="text-sm text-gray-600">
+        Mostrando <span id="showingStart">0</span>-<span id="showingEnd">0</span> de <span id="totalCount">0</span> registros
+      </div>
+      <div class="flex gap-2">
+        <button 
+          id="prevPage" 
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Anterior
+        </button>
+        <span id="pageInfo" class="px-4 py-2 text-gray-700 font-medium">Página 1</span>
+        <button 
+          id="nextPage" 
+          class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ver detalles -->
+  <div 
+    id="detailsModal" 
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
+  >
+    <div class="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Detalles del Registro</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Usuario:</label>
+        <p id="detailUsername" class="text-gray-900 font-semibold">-</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Acción:</label>
+        <p id="detailAction" class="text-gray-900 font-semibold">-</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Módulo:</label>
+        <p id="detailModule" class="text-gray-900">-</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Fecha:</label>
+        <p id="detailDate" class="text-gray-900">-</p>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Detalles Técnicos:</label>
+        <div id="detailsContent" class="bg-gray-100 rounded p-3 overflow-auto max-h-96 text-xs font-mono text-gray-800">
+          -
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button 
+          onclick="closeDetailsModal()" 
+          class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+        >
+          Cerrar
+        </button>
+        <button 
+          id="copyDetails" 
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          Copiar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Estado global
+let allLogs = [];
+let currentPage = 1;
+const logsPerPage = 20;
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+  loadActivityLogs();
+  
+  // Event listeners para filtros
+  document.getElementById('applyFilters').addEventListener('click', () => {
+    currentPage = 1;
+    loadActivityLogs();
+  });
+  
+  document.getElementById('clearFilters').addEventListener('click', clearFilters);
+  document.getElementById('exportLogs').addEventListener('click', exportToCSV);
+  document.getElementById('nextPage').addEventListener('click', () => {
+    currentPage++;
+    displayLogs();
+  });
+  document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) currentPage--;
+    displayLogs();
+  });
+});
+
+/**
+ * Cargar logs de actividad
+ */
+async function loadActivityLogs() {
+  try {
+    const module = document.getElementById('moduleFilter').value;
+    const userId = document.getElementById('userFilter').value;
+    const startDate = document.getElementById('startDateFilter').value;
+    const endDate = document.getElementById('endDateFilter').value;
+
+    const params = new URLSearchParams();
+    if (module) params.append('module', module);
+    if (userId) params.append('userId', userId);
+    if (startDate) params.append('startDate', new Date(startDate).toISOString());
+    if (endDate) params.append('endDate', new Date(endDate).toISOString());
+
+    const response = await fetch(`/api/admin/activity-logs?${params.toString()}`, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        window.location.href = '/';
+        return;
+      }
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    allLogs = data.data || [];
+    
+    document.getElementById('logCount').textContent = allLogs.length;
+    document.getElementById('totalCount').textContent = allLogs.length;
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+    
+    displayLogs();
+  } catch (err) {
+    console.error('Error cargando logs:', err);
+    document.getElementById('logsTableBody').innerHTML = `
+      <tr>
+        <td colspan="5" class="px-6 py-8 text-center text-red-500">
+          Error al cargar los registros. Intenta nuevamente.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+/**
+ * Mostrar logs en la tabla
+ */
+function displayLogs() {
+  const start = (currentPage - 1) * logsPerPage;
+  const end = start + logsPerPage;
+  const visibleLogs = allLogs.slice(start, end);
+
+  const tbody = document.getElementById('logsTableBody');
+  
+  if (visibleLogs.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+          ${allLogs.length === 0 ? 'No hay registros.' : 'No hay más registros.'}
+        </td>
+      </tr>
+    `;
+  } else {
+    tbody.innerHTML = visibleLogs.map(log => {
+      const date = new Date(log.created_at);
+      const actionLabel = getActionLabel(log.action);
+      const moduleLabel = getModuleLabel(log.module);
+      
+      return `
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 text-sm font-medium text-gray-900">${escapeHtml(log.username)}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">${actionLabel}</td>
+          <td class="px-6 py-4 text-sm text-gray-700">
+            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full ${getModuleBadgeClass(log.module)}">
+              ${moduleLabel}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-600">${formatDate(date)}</td>
+          <td class="px-6 py-4 text-center">
+            <button 
+              onclick='showDetails(${JSON.stringify(log).replace(/'/g, "&apos;")})' 
+              class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            >
+              Ver
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Actualizar paginación
+  updatePagination(start, end);
+}
+
+/**
+ * Actualizar controles de paginación
+ */
+function updatePagination(start, end) {
+  const showing = allLogs.length > 0 ? start + 1 : 0;
+  const showingEnd = Math.min(end, allLogs.length);
+  
+  document.getElementById('showingStart').textContent = showing;
+  document.getElementById('showingEnd').textContent = showingEnd;
+  document.getElementById('pageInfo').textContent = `Página ${currentPage}`;
+  
+  document.getElementById('prevPage').disabled = currentPage === 1;
+  document.getElementById('nextPage').disabled = end >= allLogs.length;
+}
+
+/**
+ * Mostrar detalles en modal
+ */
+function showDetails(log) {
+  document.getElementById('detailUsername').textContent = log.username || '-';
+  document.getElementById('detailAction').textContent = getActionLabel(log.action);
+  document.getElementById('detailModule').textContent = getModuleLabel(log.module);
+  document.getElementById('detailDate').textContent = formatDate(new Date(log.created_at));
+  
+  try {
+    const details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+    document.getElementById('detailsContent').textContent = JSON.stringify(details, null, 2);
+  } catch {
+    document.getElementById('detailsContent').textContent = log.details || '-';
+  }
+  
+  document.getElementById('detailsModal').classList.remove('hidden');
+  
+  // Preparar botón de copiar
+  document.getElementById('copyDetails').onclick = () => {
+    const text = document.getElementById('detailsContent').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Detalles copiados al portapapeles');
+    });
+  };
+}
+
+function closeDetailsModal() {
+  document.getElementById('detailsModal').classList.add('hidden');
+}
+
+/**
+ * Limpiar filtros
+ */
+function clearFilters() {
+  document.getElementById('moduleFilter').value = '';
+  document.getElementById('userFilter').value = '';
+  document.getElementById('startDateFilter').value = '';
+  document.getElementById('endDateFilter').value = '';
+  currentPage = 1;
+  loadActivityLogs();
+}
+
+/**
+ * Exportar logs a CSV
+ */
+function exportToCSV() {
+  if (allLogs.length === 0) {
+    alert('No hay registros para exportar');
+    return;
+  }
+
+  let csv = 'Usuario,Acción,Módulo,Fecha/Hora,Detalles\n';
+  
+  allLogs.forEach(log => {
+    const details = typeof log.details === 'string' ? log.details : JSON.stringify(log.details);
+    csv += `"${log.username}","${log.action}","${log.module}","${new Date(log.created_at).toLocaleString()}","${details.replace(/"/g, '""')}"\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `activity-logs-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
+/**
+ * Utilidades
+ */
+function getActionLabel(action) {
+  const labels = {
+    'login': '🔐 Inicio de Sesión',
+    'logout': '🚪 Cierre de Sesión',
+    'change_password': '🔑 Cambio de Contraseña',
+    'view_profile': '👁️ Ver Perfil',
+    'create_user': '➕ Crear Usuario',
+    'delete_user': '🗑️ Eliminar Usuario',
+    'update_user': '✏️ Actualizar Usuario',
+    'request_password_reset': '📧 Solicitar Reseteo',
+    'unknown_action': '❓ Acción Desconocida'
+  };
+  return labels[action] || `${action}`;
+}
+
+function getModuleLabel(module) {
+  const labels = {
+    'auth': 'Autenticación',
+    'admin': 'Administración',
+    'profile': 'Perfil',
+    'general': 'General'
+  };
+  return labels[module] || module;
+}
+
+function getModuleBadgeClass(module) {
+  const classes = {
+    'auth': 'bg-blue-100 text-blue-800',
+    'admin': 'bg-red-100 text-red-800',
+    'profile': 'bg-green-100 text-green-800',
+    'general': 'bg-gray-100 text-gray-800'
+  };
+  return classes[module] || 'bg-gray-100 text-gray-800';
+}
+
+function formatDate(date) {
+  return date.toLocaleString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+<!-- Cerrar modal al hacer click fuera -->
+<script>
+document.getElementById('detailsModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('detailsModal')) {
+    closeDetailsModal();
+  }
+});
+</script>

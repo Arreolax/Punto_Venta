@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar Email</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link href="/styles/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../libs/fontawesome/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+
+<div class="relative min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+
+  <!-- Fondo naranja izquierdo -->
+  <div class="absolute top-0 left-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+  </div>
+
+  <!-- Fondo naranja derecho -->
+  <div class="absolute top-0 right-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+  </div>
+
+  <!-- Contenedor principal -->
+  <div class="relative bg-orange-600 w-[425px] p-8 shadow-md text-center">
+    <div class="relative bg-white w-[360px] p-8 shadow-md text-center mx-auto">
+
+      <div class="flex justify-center mb-6">
+        <img src="/images/logo-b.png" class="w-full h-auto" alt="Logo" style="max-width: 350px;">
+      </div>
+
+      <h2 class="text-xl font-semibold mb-2">Verificar Email</h2>
+      <p class="text-sm text-gray-600 mb-6">Verificando tu email...</p>
+
+      <!-- Spinner de carga -->
+      <div id="loadingSpinner" class="flex justify-center mb-6">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+
+      <!-- Mensaje de éxito -->
+      <div id="successMessage" class="text-green-600 text-sm p-4 bg-green-100 rounded hidden mb-4">
+        <i class="fas fa-check-circle text-lg"></i>
+        <p class="mt-2"><strong>¡Email verificado exitosamente!</strong></p>
+        <p class="text-xs mt-1">Tu cuenta ha sido activada. Redirigiendo a inicio de sesión...</p>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div id="errorMessage" class="text-red-600 text-sm p-4 bg-red-100 rounded hidden mb-4">
+        <i class="fas fa-exclamation-circle text-lg"></i>
+        <p class="mt-2"><strong id="errorTitle">Error en la verificación</strong></p>
+        <p class="text-xs mt-1" id="errorText"></p>
+      </div>
+
+      <!-- Botón de regreso después de error -->
+      <div id="actionButtons" class="hidden mt-6 flex gap-3">
+        <a href="/" class="flex-1 bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
+          Ir a inicio de sesión
+        </a>
+        <a href="/recuperar" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+          Solicitar reenvío
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const postVerifyRedirect = '/logout';
+
+  // Variables del token
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+
+  // Ejecutar verificación al cargar la página
+  async function verifyEmail() {
+    if (!token) {
+      showError('Token no proporcionado', 'El enlace de verificación no contiene un token válido.');
+      return;
+    }
+
+    try {
+      // Hacer petición GET a /api/auth/verify-email con el token
+      const response = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Mostrar éxito
+        showSuccess();
+        
+        // Redirigir a login después de 3 segundos
+        setTimeout(() => {
+          window.location.href = postVerifyRedirect;
+        }, 3000);
+      } else {
+        // Mostrar error
+        showError(
+          'Verificación fallida',
+          data.message || 'No se pudo verificar el email. Intenta nuevamente.'
+        );
+      }
+    } catch (error) {
+      console.error('Error en verificación:', error);
+      showError(
+        'Error de conexión',
+        'Ocurrió un error al verificar tu email. Por favor intenta más tarde.'
+      );
+    }
+  }
+
+  function showSuccess() {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+    document.getElementById('successMessage').classList.remove('hidden');
+    document.getElementById('errorMessage').classList.add('hidden');
+    document.getElementById('actionButtons').classList.add('hidden');
+  }
+
+  function showError(title, message) {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+    document.getElementById('successMessage').classList.add('hidden');
+    document.getElementById('errorMessage').classList.remove('hidden');
+    document.getElementById('errorTitle').textContent = title;
+    document.getElementById('errorText').textContent = message;
+    document.getElementById('actionButtons').classList.remove('hidden');
+  }
+
+  // Iniciar verificación cuando cargue el DOM
+  document.addEventListener('DOMContentLoaded', verifyEmail);
+</script>
+
+</body>
+</html>

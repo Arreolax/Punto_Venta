@@ -1,0 +1,146 @@
+<!-- Fondo Alerta -->
+<div id="alertBackdrop" class="fixed inset-0 bg-black/50 z-[9999] hidden"></div>
+
+<!-- Modal Alerta -->
+<div id="alertModal" class="fixed inset-0 z-[9999] hidden items-center justify-center">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-xl p-6 relative">
+
+    <div class="flex items-center gap-3 mb-4">
+      <div id="alertIcon" class="text-2xl"></div>
+      <h3 id="alertTitle" class="text-lg font-bold"></h3>
+    </div>
+
+    <p id="alertMessage" class="text-gray-700 mb-6 whitespace-pre-line"></p>
+
+    <div class="flex justify-end">
+      <button id="alertClose"
+        class="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-800">
+        Aceptar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal Confirmación -->
+<div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-xl p-6 relative">
+    <button id="confirmModalClose" type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition" aria-label="Cerrar confirmación">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+    <h3 id="confirmModalTitle" class="text-lg font-bold mb-2">Confirmar acción</h3>
+    <p id="confirmModalMessage" class="text-gray-700 mb-6">¿Estás seguro?</p>
+    <div class="flex justify-end gap-2">
+      <button id="confirmModalCancel" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancelar</button>
+      <button id="confirmModalAccept" class="px-4 py-2 rounded bg-orange-500 text-white hover:bg-orange-600">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cambiar Contraseña -->
+<div id="passwordModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-xl p-6 relative">
+    <button id="passwordModalClose" type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition" aria-label="Cerrar cambio de contraseña">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+    <h3 id="passwordModalTitle" class="text-lg font-bold mb-4">Cambiar contraseña</h3>
+    <p id="passwordModalError" class="text-red-600 text-sm mb-4 hidden"></p>
+    
+    <!-- Campo de contraseña con toggle y Caps Lock indicator -->
+    <div class="mb-4">
+      <label class="text-sm font-medium text-gray-700 block mb-2">Nueva contraseña</label>
+      <div class="relative mb-2">
+        <input 
+          id="passwordModalInput" 
+          type="password" 
+          placeholder="Mínimo 8 caracteres" 
+          class="w-full border border-gray-300 rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+        />
+        <button 
+          type="button" 
+          id="passwordModalToggle" 
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition"
+        >
+          <i id="passwordModalToggleIcon" class="fa-solid fa-eye"></i>
+        </button>
+      </div>
+      
+      <!-- Caps Lock indicator -->
+      <div id="passwordModalCapsWarning" class="text-xs text-yellow-600 hidden flex items-center gap-1 mb-3">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>Bloq Mayus activado</span>
+      </div>
+      
+      <!-- Requisitos de contraseña visibles -->
+      <div class="bg-gray-50 border border-gray-200 rounded p-3 mb-3">
+        <p class="text-xs font-semibold text-gray-700 mb-2">Requisitos:</p>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <i id="pwdReqLength" class="fa-solid fa-circle text-gray-300" style="font-size: 0.35rem;"></i>
+            <span class="text-xs text-gray-600">Mínimo 8 caracteres</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i id="pwdReqUppercase" class="fa-solid fa-circle text-gray-300" style="font-size: 0.35rem;"></i>
+            <span class="text-xs text-gray-600">Una mayúscula (A-Z)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i id="pwdReqLowercase" class="fa-solid fa-circle text-gray-300" style="font-size: 0.35rem;"></i>
+            <span class="text-xs text-gray-600">Una minúscula (a-z)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i id="pwdReqNumber" class="fa-solid fa-circle text-gray-300" style="font-size: 0.35rem;"></i>
+            <span class="text-xs text-gray-600">Un número (0-9)</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Seguridad de contraseña -->
+      <div class="mb-3">
+        <div class="flex items-center gap-2 text-xs mb-1">
+          <span class="text-gray-600">Seguridad:</span>
+          <div id="passwordModalStrength" class="flex gap-1 flex-1">
+            <div class="h-1 flex-1 bg-gray-300 rounded"></div>
+            <div class="h-1 flex-1 bg-gray-300 rounded"></div>
+            <div class="h-1 flex-1 bg-gray-300 rounded"></div>
+            <div class="h-1 flex-1 bg-gray-300 rounded"></div>
+          </div>
+        </div>
+        <p id="passwordModalStrengthText" class="text-xs text-gray-500">Escribe la contraseña para ver su seguridad</p>
+      </div>
+    </div>
+    
+    <div class="flex justify-end gap-2">
+      <button id="passwordModalCancel" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 transition">Cancelar</button>
+      <button id="passwordModalConfirm" class="px-4 py-2 rounded bg-orange-500 text-white hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Perfil -->
+<div id="profileModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50">
+  <div class="bg-white w-full max-w-md rounded-lg shadow-xl p-6 relative">
+    <button id="profileModalClose" type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition" aria-label="Cerrar editar perfil">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+    <h3 class="text-lg font-bold mb-2">Editar perfil</h3>
+    <p id="profileModalError" class="text-red-600 text-sm mb-4 hidden"></p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium">Usuario</label>
+        <input id="profileUsername" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Email</label>
+        <input id="profileEmail" type="email" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Teléfono</label>
+        <input id="profilePhone" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="+52 XXX XXX XXXX" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-4">
+      <button id="profileModalCancel" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancelar</button>
+      <button id="profileModalSave" class="px-4 py-2 rounded bg-orange-500 text-white hover:bg-orange-600">Guardar</button>
+    </div>
+  </div>
+</div>

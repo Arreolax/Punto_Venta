@@ -1,0 +1,141 @@
+<!-- Pantalla de carga -->
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando Venta...' }) %>
+
+  <!-- Contenido -->
+  <div id="contenido" class="hidden">
+    <% if (sale) { %>
+      <div class="grid grid-cols-1 gap-6 px-5 items-start">
+
+        <!-- Sale Info -->
+        <div class="pt-4 p-6 space-y-3 border border-black/50 rounded">
+          <h1 class="font-bold text-center uppercase">Informacion de la venta</h1>
+          <div class="grid grid-cols-2 space-y-3">
+            <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[15px] pl-2">
+
+              <span class="font-semibold text-gray-700">Fecha y hora de creación:</span>
+              <span class="italic">
+                <%= sale.fecha %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Nombre del vendedor:</span>
+              <span class="italic">
+                <%= sale.nombre_empleado %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Nombre del cliente:</span>
+              <span class="italic">
+                <%= sale.nombre_cliente %>
+              </span>
+
+              <span class="font-semibold text-gray-700">Método de pago:</span>
+              <span class="italic">
+                <%= sale.metodo_pago.charAt(0).toUpperCase() + sale.metodo_pago.slice(1).toLowerCase() %>
+              </span>
+
+              <% if (sale.referencia_pago !=null) { %>
+                <span class="font-semibold text-gray-700">Referencia de pago:</span>
+                <span class="italic">
+                  <%= sale.referencia_pago %>
+                </span>
+                <% } %>
+
+                  <% if (sale.total_recibido !=null) { %>
+                    <span class="font-semibold text-gray-700">Efectivo recibido:</span>
+                    <span class="font-bold">$<%= sale.total_recibido %></span>
+                    <% } %>
+
+                      <span class="font-semibold text-gray-700">Total de compra:</span>
+                      <span class="font-bold">$<%= sale.total_pago %></span>
+
+                      <% if (sale.cambio !=null) { %>
+                        <span class="font-semibold text-gray-700">Cambio devuelto:</span>
+                        <span class="font-bold text-green-600">$<%= sale.cambio %></span>
+                        <% } %>
+
+            </div>
+            <div class="flex justify-center items-center my-6">
+              <img src="/images/logo-w.png" alt="Logo empresa" class="h-52 object-contain mx-auto" />
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="pt-4 overflow-x-auto">
+            <table class="w-full table-auto border-collapse">
+              <thead>
+                <tr class="bg-gray-600 text-white">
+                  <th class="px-4 py-2">Codigo Producto</th>
+                  <th class="px-4 py-2">Etiqueta del Producto</th>
+                  <th class="px-4 py-2">Categoria</th>
+                  <th class="px-4 py-2">Precio sin IVA</th>
+                  <th class="px-4 py-2">IVA 16%</th>
+                  <th class="px-4 py-2">Precio Unitario</th>
+                  <th class="px-4 py-2">Cantidad</th>
+                  <th class="px-4 py-2">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody class="text-center">
+                <% sale.productos.forEach(producto=> { %>
+                  <tr class="hover:bg-gray-100">
+                    <td class="px-4 py-2">
+                      <%= producto.codigo %>
+                    </td>
+                    <td class="px-4 py-2 italic">
+                      <%= producto.nombre %>
+                    </td>
+                    <td class="px-4 py-2">
+                      <%= producto.categoria %>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                      $<%= (producto.precio_unidad / 1.16).toFixed(2) %>
+                    </td>
+
+                    <td class="px-4 py-3 text-center">
+                      $<%= (producto.precio_unidad - (producto.precio_unidad / 1.16)).toFixed(2) %>
+                    </td>
+                    <td class="px-4 py-2">
+                      $<%= producto.precio_unidad %>
+                    </td>
+                    <td class="px-4 py-2">
+                      <%= producto.cantidad %> pz.
+                    </td>
+                    <td class="px-4 py-2 font-bold">
+                      $<%= producto.subtotal %>
+                    </td>
+                  </tr>
+                  <% }) %>
+              </tbody>
+            </table>
+
+            <div class="flex justify-center pt-2 border-t-2 border-black/50 mt-4 space-x-10">
+              <button id="btnRegresarS" class="mt-4 px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80">
+                Regresar
+              </button>
+              <% if(sale.folio_ticket==="SIN TICKET" ) { %>
+                <a href=""
+                  class="mt-4 px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80 inline-block text-center">
+                  Generar Ticket
+                </a>
+
+                <% }else{ %>
+                  <a href="/tickets/vista-previa/<%= sale.folio_ticket %>"
+                    class="mt-4 px-4 py-2 bg-[#FF2A00] text-white rounded hover:bg-[#FF2A00]/80 inline-block text-center">
+                    Ver Ticket
+                  </a>
+                  <% } %>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <% }else{ %>
+        <div class="border-black/30 border-t-4 p-6 text-center">
+          <p class="text-center font-bold text-2xl">Venta no encontrada</p>
+          <i class="fa-solid fa-circle-exclamation text-[120px] pt-3 text-red-500"></i>
+        </div>
+        <% } %>
+  </div>
+  <!-- Alert Modal -->
+  <%- include('../partials/alertModal') %>
+
+    <script src="/js/sales.js"></script>

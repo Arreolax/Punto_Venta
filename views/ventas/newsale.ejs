@@ -1,0 +1,174 @@
+<!-- Pantalla de carga -->
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando...' }) %>
+
+    <!-- Contenido -->
+    <div id="contenido" class="hidden">
+        <div class="px-5">
+            <div class="p-6 space-y-4 border-4 border-black/20 rounded bg-white">
+                <h1 class="font-bold text-center text-xl uppercase flex items-center justify-center gap-2">
+                    Emitir Venta
+                </h1>
+
+                <!-- Formulario -->
+                <form id="formularioVenta" class="bg-white p-6 rounded-xl shadow-xl border border-gray-300">
+
+                    <div class="grid grid-cols-2 gap-6 border-b pb-6 mb-6">
+
+                        <div class="flex flex-col">
+                            <label class="text-sm font-semibold mb-1">Nombre del Vendedor</label>
+                            <input type="text" value="<%= vendedorNombre %>"
+                                class="border rounded px-3 py-2 bg-gray-100 cursor-not-allowed" disabled />
+                        </div>
+
+                        <div class="flex flex-col relative">
+                            <label class="text-sm font-semibold mb-1">Nombre del Cliente</label>
+                            <input type="text" id="buscarCliente" placeholder="Búsqueda o 'Público en General'"
+                                value="Público en General"
+                                class="border rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 outline-none" />
+
+                            <!-- Dropdown de clientes -->
+                            <div id="resultadosClientes"
+                                class="absolute top-full left-0 right-0 mt-1 border rounded bg-white shadow hidden max-h-48 overflow-y-auto z-10">
+                            </div>
+
+                            <!-- Campo oculto para guardar client_id -->
+                            <input type="hidden" id="clientId" value="1" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Método de Pago</label>
+                            <select id="metodoPago"
+                                class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 outline-none">
+                                <option value="">Selecciona un método...</option>
+                                <option value="efectivo">Efectivo</option>
+                                <!--     <option value="tarjeta">Tarjeta</option>  -->
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
+
+                        <div id="seccionReferencia" class="flex flex-col hidden">
+                            <label class="text-sm font-semibold mb-1">Referencia de Pago</label>
+                            <input id="referenciaPago" type="text" placeholder="Ej: xxx-1234567"
+                                class="border-2 border-black/50 rounded px-3 py-2" />
+                        </div>
+
+                        <div id="seccionEfectivo" class="grid grid-cols-2 gap-4 hidden col-span-2">
+                            <div class="flex flex-col">
+                                <label class="text-sm font-semibold mb-1">Monto Recibido</label>
+                                <input id="montoRecibido" type="number" step="0.01" min="0" placeholder="0.00"
+                                    class="border-2 border-black/50 rounded px-3 py-2" />
+                            </div>
+
+                            <div class="flex flex-col">
+                                <label class="text-sm font-semibold mb-1">Cambio (Referencia)</label>
+                                <input id="cambioReferencia" type="text" disabled value="$0.00"
+                                    class="border-2 border-black/50 rounded px-3 py-2 bg-gray-50" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Buscador de Productos -->
+                    <div class="mb-6">
+                        <label class="block font-semibold mb-2">Buscar Producto</label>
+
+                        <div class="relative">
+                            <input type="text" id="buscarProducto" placeholder="Escribe nombre o referencia..."
+                                class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-orange-400 outline-none">
+
+                            <div id="resultadosProductos"
+                                class="absolute top-full left-0 right-0 mt-1 border rounded bg-white shadow hidden max-h-48 overflow-y-auto z-10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje de Carrito Vacio -->
+                    <div id="mensajeVacio"
+                        class="bg-white border-0 border-white rounded-xl  p-10 text-center max-w-md mx-auto">
+
+                        <div class="flex justify-center mb-4">
+                            <div class="bg-white p-5 rounded-full">
+                                <i class="fa-solid fa-cart-shopping text-3xl text-gray-800"></i>
+                            </div>
+                        </div>
+
+                        <h2 class="text-lg font-semibold text-gray-800">
+                            Agrega productos al carrito
+                        </h2>
+
+                    </div>
+
+                    <!-- Tabla de Carrito -->
+                    <div id="contenedorTabla" class="overflow-x-auto mb-6">
+                        <table class="w-full border text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-2 border">Producto</th>
+                                    <th class="p-2 border">Precio sin IVA</th>
+                                    <th class="p-2 border">IVA 16%</th>
+                                    <th class="p-2 border">Precio Final</th>
+                                    <th class="p-2 border">Cantidad</th>
+                                    <th class="p-2 border">Subtotal</th>
+                                    <th class="p-2 border text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaProductos"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Total -->
+                    <div id="contenedorTotales" class="flex justify-end mb-6">
+                        <div class="space-y-3 max-w-md ml-auto">
+
+                            <div class="flex justify-between items-center gap-5">
+                                <p class="text-lg font-semibold text-gray-700">
+                                    Total Sin IVA:
+                                </p>
+                                <p id="totalSinIVA" class="text-2xl font-bold text-[#4c00ff]">
+                                    $0.00
+                                </p>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <p class="text-lg font-semibold text-gray-700">
+                                    IVA 16%:
+                                </p>
+                                <p id="totalIVA" class="text-2xl font-bold text-blue-600">
+                                    $0.00
+                                </p>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <p class="text-lg font-bold text-gray-900">
+                                    Total:
+                                </p>
+                                <p id="totalVenta" class="text-2xl font-bold text-green-700">
+                                    $0.00
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="flex justify-end gap-6">
+                        <a href="/ventas"
+                            class="px-5 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition font-semibold">
+                            Cancelar
+                        </a>
+
+                        <button id="btnGuardarVenta" type="submit"
+                            class="px-6 py-2 bg-[#FF2A00] text-white rounded hover:bg-orange-600 transition font-semibold">
+                            Guardar Venta
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <%- include('../partials/alertModal') %>
+
+        <script src="/js/sales.js"></script>

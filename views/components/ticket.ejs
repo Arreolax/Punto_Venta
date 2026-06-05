@@ -1,0 +1,103 @@
+<div id="ticket-thermal-content">
+  <div id="ticket-pdf" class="bg-white text-black p-4 font-mono text-sm border border-black/50 shadow relative"
+    style="width:80mm;">
+    <img src="<%= ticket.compania_logo %>" alt="Logo empresa" class="absolute top-2 right-3 h-12 object-contain" />
+
+    <div class="text-left text-[10px] mb-3 pr-13 -space-y-0.5">
+      <p class="font-bold">
+        <%= ticket.nombre_compania %>
+      </p>
+      <% let phone=(ticket.telefono_empleado || ticket.telefono_compania ).replace(/\D/g, '' ); if (phone.length===12 &&
+        phone.startsWith('52')) { phone=phone.slice(2); } %>
+
+        <p class="font-bold">
+          +52 <%= phone.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3' ) %>
+        </p>
+        <p>--------</p>
+        <p>Direccion</p>
+        <p>cp mx</p>
+        <div class="text-left text-[10px] flex gap-2 items-center">
+          <p class="fecha"></p>
+          <p class="hora"></p>
+        </div>
+    </div>
+
+    <div class="text-left text-xs">
+      <p>ATENDIDO POR: <%= ticket.nombre_empleado %>
+      </p>
+      <p>CLIENTE: PUBLICO EN GENERAL</p>
+    </div>
+
+
+    <div class="text-center font-bold mb-3 mt-2">
+      <p>NOTA DE VENTA: <%= ticket.folio %>
+      </p>
+    </div>
+
+    <div
+      class="border-t border-b border-black py-1 grid grid-cols-[35px_40px_45px_35px_50px_50px] font-extrabold text-[11px]">
+      <span>Cant</span>
+      <span>Cod</span>
+      <span class="col-span-2">Prod</span>
+      <span>PU</span>
+      <span class="text-right font-extrabold">Importe</span>
+    </div>
+
+    <div class="mt-2 space-y-2 text-[11px]">
+      <% ticket.productos.forEach(p=> { %>
+        <div class="grid grid-cols-[35px_40px_45px_35px_50px_50px]">
+          <span>
+            <%= p.cantidad %>
+          </span>
+          <span class="">
+            <%= p.codigo %>
+          </span>
+          <span class="col-span-2 break-words">
+            <%= p.nombre %>
+          </span>
+          <span>
+            $<%= p.precio_unidad %>
+          </span>
+          <span class="text-right font-semibold">
+            $<%= p.subtotal %>
+          </span>
+        </div>
+        <% }) %>
+    </div>
+
+    <div class="border-t border-black mt-3 pt-2 flex justify-between items-start">
+
+      <div class="text-[10px] font-normal leading-tight">
+        <p>
+          Metodo de pago:
+          <span class="font-extrabold italic">
+            <%= ticket.metodo_pago.charAt(0).toUpperCase() + ticket.metodo_pago.slice(1).toLowerCase() %>
+          </span>
+        </p>
+
+        <% if (ticket.metodo_pago=="efectivo" ) { %>
+          <p>Dinero Recibido:
+            <span class="font-extrabold italic"> $<%= ticket.total_recibido %> </span>
+          </p>
+          <p>Dinero Devuelto:
+            <span class="font-extrabold italic"> $<%= ticket.cambio %> </span>
+          </p>
+          <% } %>
+      </div>
+
+      <div class="font-extrabold text-[12px] text-right italic">
+        Total $<%= ticket.total_pago %>
+      </div>
+
+    </div>
+
+
+    <div class="text-center text-[11px] mt-4">
+      <p>ESTE NO ES UN COMPROBANTE FISCAL</p>
+      <p>** Un giro de experiencia **</p>
+      <p>
+        <%= ticket.mensaje_comercial %>
+      </p>
+    </div>
+  </div>
+</div>

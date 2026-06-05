@@ -1,0 +1,45 @@
+<% const shouldForceShow=typeof forceShow !=='undefined' ? forceShow : false; 
+  const modulePrefix=items[0].to.split('/').slice(0, 2).join('/'); 
+  const isCurrentModule=path.startsWith(modulePrefix); 
+  const modules=['/usuarios', '/clientes','/inventario','/facturas','/ventas','/tickets']; 
+  const isInAnyModule=modules.some(m=>path.startsWith(m));
+
+  const showSection = shouldForceShow || isCurrentModule || !isInAnyModule;
+  %>
+
+  <% if (showSection) { %>
+
+    <div class="mb-6">
+
+      <h3 class="px-4 mb-2 text-xs font-semibold text-black uppercase flex items-center gap-2 tracking-wider">
+        <% if (icon) { %>
+          <i class="fa-solid <%= icon %> text-black"></i>
+          <% } %>
+            <span>
+              <%= title %>
+            </span>
+      </h3>
+
+      <ul class="px-2 space-y-1">
+        <% items.forEach(item=> { %>
+
+          <li>
+            <a href="<%= item.to %>" class=" flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200
+          <%= path === item.to 
+            ? 'bg-[#FF5100]/10 text-[#FF5100] font-semibold shadow-sm' 
+            : 'text-gray-600 hover:bg-gray-100 hover:text-[#FF5100]' %>">
+
+              <span class="w-1.5 h-1.5 rounded-full 
+            <%= path === item.to ? 'bg-[#FF5100]' : 'bg-gray-300' %>">
+              </span>
+
+              <%= item.label %>
+            </a>
+          </li>
+
+          <% }) %>
+      </ul>
+
+    </div>
+
+    <% } %>

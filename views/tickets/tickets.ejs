@@ -1,0 +1,209 @@
+<!-- Pantalla de carga -->
+<%- include('../partials/loadingScreen', { loaderText: 'Cargando Tickets...' }) %>
+
+  <!-- Contenido -->
+  <div id="contenido" class="hidden">
+    <div class="px-5">
+      <div class="p-6 space-y-4 border-4 border-black/20  rounded bg-white">
+
+        <h1 class="font-bold text-center text-xl uppercase">Historial de Tickets</h1>
+
+        <!-- Formulario de busqueda -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-300">
+
+            <form method="GET" action="/tickets" class="space-y-5">
+
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <h2 class="text-base font-semibold text-gray-700">
+                  Búsqueda
+                </h2>
+
+                <div class="flex gap-2">
+                  <button type="submit"
+                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md text-sm transition">
+                    Filtrar
+                  </button>
+
+                  <a href="/tickets"
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-black rounded-md text-sm transition">
+                    Limpiar Filtros
+                  </a>
+                </div>
+              </div>
+
+              <!-- Fechas -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input name="fechaInicio" type="date"
+                  value="<%= typeof fechaInicio !== 'undefined' ? fechaInicio : '' %>"
+                  class="calendar-orange w-full border border-gray-400 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                  placeholder="Fecha inicial" />
+
+                <input name="fechaFin" type="date" value="<%= typeof fechaFin !== 'undefined' ? fechaFin : '' %>"
+                  class="calendar-orange w-full border border-gray-400 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none"
+                  placeholder="Fecha final" />
+              </div>
+
+              <div class="my-5 border-t border-gray-400"></div>
+
+              <div class="flex flex-col md:flex-row gap-3 md:items-end">
+
+                <!-- Buscador -->
+                <div class="flex-1">
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2">
+                      <i class="fa-solid fa-magnifying-glass text-gray-600"></i>
+                    </span>
+                    <input id="ticketSearch" name="search" value="<%= typeof search !== 'undefined' ? search : '' %>"
+                      placeholder="Buscar por Folio o Cliente..."
+                      class="w-full pl-9 pr-3 py-2 border border-gray-400 rounded-md text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none" />
+                  </div>
+                </div>
+
+                <!-- Filtro por Metodo -->
+                <select name="metodo"
+                  class="px-3 py-2 border border-gray-400 rounded-md text-sm focus:ring-2 focus:ring-orange-400 focus:outline-none">
+                  <option value="Todos" <%=metodo==='Todos' ? 'selected' : '' %>>Todo</option>
+                  <option value="Efectivo" <%=metodo==='Efectivo' ? 'selected' : '' %>>Efectivo</option>
+                  <option value="Transferencia" <%=metodo==='Transferencia' ? 'selected' : '' %>>Transferencia</option>
+                </select>
+
+              </div>
+
+            </form>
+        </div>
+
+        <% if (tickets && tickets.length> 0) { %>
+            <div id="ticketsContainer" class="max-w-full mx-auto mt-6">
+              <% tickets.forEach((ticket)=> { %>
+                <div class="mb-5 bg-white shadow-xl rounded-xl border border-gray-800 overflow-hidden">
+
+                  <div
+                    class="ticket-card-header cursor-pointer p-5 flex justify-between items-center hover:bg-gray-50 transition">
+
+                    <div class="grid grid-cols-6 gap-6 w-full text-sm">
+
+                      <div>
+                        <p class="text-gray-500 text-xs">Fecha de Creacion</p>
+                        <p class="font-semibold text-gray-800">
+                          <%= ticket.created_at %>
+                        </p>
+                      </div>
+
+                      <div>
+                        <p class="text-gray-500 text-xs">Folio de Ticket</p>
+                        <p class="font-semibold text-gray-800">
+                          <%= ticket.folio %>
+                        </p>
+                      </div>
+
+                      <div>
+                        <p class="text-gray-500 text-xs">Nombre del Vendedor</p>
+                        <p class="font-semibold text-gray-800">
+                          <%= ticket.nombre_empleado %>
+                        </p>
+                      </div>
+
+                      <div>
+                        <p class="text-gray-500 text-xs">Nombre del Cliente</p>
+                        <p class="font-semibold text-gray-800">
+                          <%= ticket.nombre_cliente %>
+                        </p>
+                      </div>
+
+                      <div>
+                        <p class="text-gray-500 text-xs">Método de Pago</p>
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">
+                          <%= ticket.metodo_pago.charAt(0).toUpperCase() + ticket.metodo_pago.slice(1).toLowerCase() %>
+                        </span>
+                      </div>
+
+                      <div class="text-right">
+                        <p class="text-gray-500 text-xs">Total de Compra</p>
+                        <p class="italic font-bold text-lg text-gray-900">
+                          $<%= ticket.total_pago %>
+                        </p>
+                      </div>
+
+                    </div>
+
+                    <svg class="w-5 h-5 ml-4 transition-transform duration-300 text-gray-500" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+
+                  <!-- Contenido Extra -->
+                  <div class="hidden px-6 pb-6 border-t border-gray-100 bg-gray-50">
+
+                    <div class="mt-4 space-y-2 text-sm text-gray-700">
+                      <p class="font-semibold text-gray-800 mb-2">Productos:</p>
+                      <% ticket.productos.forEach(producto=> { %>
+                        <div class="flex justify-between">
+                          <span>
+                            » <%= producto.producto_nombre %>
+                          </span>
+                          <span class="text-gray-500">
+                            <%= producto.cantidad %> unidades -
+                              <span class="font-bold">
+                                $<%= producto.subtotal %>
+                              </span>
+                          </span>
+                        </div>
+                        <% }) %>
+
+
+                    </div>
+
+                    <div class="flex justify-end gap-3 mt-6">
+
+                      <% if (ticket.id_factura === null ) { %>
+                      <a title="Generar Factura" href="/facturas/nueva/<%= ticket.folio %>"
+                        class="bg-[#FF5100] hover:bg-[#902d00] text-white px-4 py-2 rounded-lg shadow transition">
+                        Generar Factura
+                      </a>
+                      <% } else { %>
+                      <a title="Ver Factura" href="/facturas/resumen/<%= ticket.id_factura %>"
+                        class="bg-[#FF5100] hover:bg-[#902d00] text-white px-4 py-2 rounded-lg shadow transition">
+                        Ver Factura
+                      </a>
+                      <% } %>
+
+                      <a title="Ver Ticket" href="/tickets/vista-previa/<%= ticket.folio %>"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg shadow transition">
+                        Vista Detallada
+                      </a>
+                    </div>
+
+                  </div>
+                </div>
+                <% }) %>
+            </div>
+          <% } else { %>
+            <div class="bg-white border-0 border-white rounded-xl  p-10 text-center max-w-md mx-auto">
+
+              <div class="flex justify-center mb-4">
+                <div class="bg-white p-5 rounded-full">
+                  <i class="fa-solid fa-clipboard-list text-3xl"></i>
+                </div>
+              </div>
+
+              <h2 class="text-lg font-semibold text-gray-800">
+                Sin Resultados
+              </h2>
+
+              <p class="text-gray-500 mt-2">
+                No Se Encontraron Tickets Registrados.
+              </p>
+
+            </div>
+            <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <%- include('../partials/alertModal') %>
+
+    <input type="hidden" id="ticketErrorMessage" value="<%= errorMessage || '' %>" />
+
+    <script src="/js/tickets.js"></script>

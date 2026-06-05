@@ -1,0 +1,673 @@
+<section>
+  <div class="bg-gray-100" data-is-vendor="<%= isVendor ? 'true' : 'false' %>"
+    data-target-user-id="<%= targetUser ? targetUser.id : '' %>" 
+    data-target-user-email="<%= targetUser ? targetUser.email : '' %>"
+    data-target-user-phone="<%= targetUser ? targetUser.phone : '' %>"
+    data-target-user-role="<%= targetUser ? targetUser.role_id : '' %>"
+    data-current-user-id="<%= user ? user.id : '' %>"
+    data-is-admin="<%= user.role_id === 1 ? 'true' : 'false' %>" 
+    data-is-self="<%= isSelfView ? 'true' : 'false' %>"
+    data-is-editable="<%= isEditable ? 'true' : 'false' %>"
+    data-can-toggle-status="<%= canToggleStatus ? 'true' : 'false' %>"
+    data-target-user-active="<%= targetUser && targetUser.is_active ? 'true' : 'false' %>"
+    data-warning="<%= typeof warning !== 'undefined' && warning ? warning : '' %>">
+    <style>
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+        vertical-align: middle;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+
+      .slider {
+        position: absolute;
+        inset: 0;
+        background-color: #d9d9d9;
+        border-radius: 999px;
+        transition: background-color 0.25s ease;
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        top: 3px;
+        background-color: #fff;
+        border-radius: 50%;
+        transition: transform 0.25s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .switch input:checked+.slider {
+        background-color: #ff6600;
+      }
+
+      .switch input:checked+.slider::before {
+        transform: translateX(24px);
+      }
+
+      .permission-card {
+        margin-top: 1rem;
+        margin-bottom: 1.2rem;
+      }
+
+      .permission-card .border-b {
+        font-size: 0.95rem;
+        padding: 0.8rem 1rem;
+      }
+
+      .permission-row {
+        padding: 0.8rem 1rem;
+      }
+
+      .permission-row:nth-child(odd) {
+        background-color: #f8fafc;
+      }
+
+      .permission-row span {
+        font-size: 0.95rem;
+      }
+
+      .sv-margin {
+        margin-top: 0.5rem;
+      }
+    </style>
+    <div class="flex-1 p-8">
+
+      <div class="max-w-7xl mx-auto mt-6 space-y-6">
+
+
+        <!-- PERFIL -->
+        <div class="bg-white rounded shadow p-6">
+
+          <% if (typeof targetUser !=='undefined' && targetUser) { %>
+            <div class="flex flex-col lg:flex-row gap-6">
+              
+              <!-- Foto de perfil y cambio -->
+              <div class="flex flex-col items-center gap-3">
+                <div class="relative group">
+                  <img src="<%= targetUser.profile_image_path || '/images/user.jpg' %>" 
+                       id="profileImage" 
+                       class="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                       alt="Foto de <%= targetUser.username %>">
+                  <% if (isEditable) { %>
+                    <button id="changeProfileImageBtn" 
+                            class="absolute bottom-0 right-0 bg-white text-gray-700 border border-gray-300 rounded-full w-9 h-9 flex items-center justify-center shadow-md hover:bg-gray-100 transition"
+                            title="Cambiar foto"
+                            aria-label="Cambiar foto">
+                      <i class="fa-solid fa-camera text-sm" aria-hidden="true"></i>
+                    </button>
+                    <input id="profileImageInput" type="file" accept="image/*" class="hidden" />
+                  <% } %>
+                </div>
+                <p class="text-xs text-gray-500 text-center max-w-24">Perfil</p>
+              </div>
+
+              <!-- Información del usuario -->
+              <div class="flex-1 flex flex-col">
+                <div class="mb-4">
+                  <h2 class="font-bold text-2xl">
+                    <%= targetUser.username %>
+                  </h2>
+                  <p class="text-gray-600 text-sm mt-1">
+                    <strong><%= (targetUser.name || '') %></strong> <%= (targetUser.last_name || '') %>
+                  </p>
+                </div>
+
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold <%= targetUser.role_id === 2 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700' %>">
+                    <i class="fa-solid <%= targetUser.role_id === 2 ? 'fa-user' : 'fa-user-shield' %> <%= targetUser.role_id === 2 ? 'text-blue-500' : 'text-orange-500' %>"></i>
+                    <%= targetUser.role_id === 1 ? 'Administrador' : 'Vendedor' %>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold <%= targetUser.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                    <i class="fa-solid fa-circle text-[0.5rem] <%= targetUser.is_active ? 'text-green-500' : 'text-red-500' %>"></i>
+                    <%= targetUser.is_active ? 'Activo' : 'Inactivo' %>
+                  </span>
+                </div>
+
+                <!-- Email, teléfono, último acceso con iconos -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200">
+                  
+                  <!-- Email -->
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-gray-400 text-sm flex-shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-gray-500">Email</p>
+                      <p class="text-sm text-gray-900 truncate"><%= targetUser.email %></p>
+                    </div>
+                  </div>
+
+                  <!-- Teléfono -->
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-phone text-gray-400 text-sm flex-shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-gray-500">Teléfono</p>
+                      <p class="text-sm text-gray-900"><%= targetUser.phone || '-' %></p>
+                    </div>
+                  </div>
+
+                  <!-- Último acceso -->
+                  <div class="flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-gray-400 text-sm flex-shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-gray-500">Último acceso</p>
+                      <% 
+                        const lastLogin = targetUser.last_access || targetUser.last_login || targetUser.updated_at || targetUser.created_at;
+                        let formattedDate = '-';
+                        if (lastLogin) {
+                          const date = new Date(lastLogin);
+                          formattedDate = date.toLocaleDateString('es-MX') + ' ' + date.toLocaleTimeString('es-MX', {hour: '2-digit', minute: '2-digit'});
+                        }
+                      %>
+                      <p class="text-sm text-gray-900"><%= formattedDate %></p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Botones de acción -->
+              <% if (isEditable || canToggleStatus) { %>
+                <div class="flex flex-col gap-2 justify-center">
+                  <div class="flex gap-2">
+                    <% if (isEditable) { %>
+                      <button id="editUserBtn"
+                              class="px-4 py-2 rounded text-white font-semibold bg-orange-500 hover:bg-orange-600 inline-flex items-center justify-center gap-2 transition text-sm">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        Editar
+                      </button>
+                    <% } %>
+                    <% if (canToggleStatus) { %>
+                      <button id="toggleActiveBtn"
+                              class="px-4 py-2 rounded border-2 font-semibold text-sm transition <%= targetUser.is_active ? 'border-red-600 text-red-600 hover:bg-red-50' : 'border-green-600 text-green-600 hover:bg-green-50' %>">
+                        <%= targetUser.is_active ? 'Desactivar' : 'Activar' %>
+                      </button>
+                    <% } %>
+                  </div>
+                </div>
+              <% } %>
+
+
+            </div>
+          <% } else { %>
+            <h2 class="font-semibold text-lg">Usuario no seleccionado</h2>
+            <p class="text-gray-500 text-sm">Por favor elige un usuario desde la tabla de usuarios</p>
+          <% } %>
+
+        </div>
+
+
+
+        <!-- TITULO -->
+        <div>
+          <h3 class="text-lg font-semibold">Configuración de Accesos</h3>
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <p class="text-gray-500 text-sm">
+              Personalice los niveles de privilegio para este perfil.
+            </p>
+            <% if (typeof targetUserId !=='undefined' && targetUserId) { %>
+              <span class="inline-block px-2 py-1 bg-orange-100 text-orange-700 rounded text-center text-xs font-semibold">
+                ID: <%= targetUserId %>
+              </span>
+            <% } %>
+          </div>
+          <% if (isVendor && targetUser && targetUser.id===user.id) { %>
+            <p class="text-red-500 text-sm mt-2">Rol vendedor: no puedes editar permisos de usuarios.</p>
+          <% } %>
+        </div>
+
+
+        <% const isAdmin=user.role_id===1; %>
+          <% const perms=targetPermissions || {} %>
+
+            <!-- USUARIOS -->
+            <div id="permissionsSwitchArea" class="">
+              <div class="bg-white rounded shadow permission-card">
+
+                <div class="border-b p-4 font-semibold">
+                  Usuarios y grupos
+                </div>
+
+                <div class="divide-y text-sm">
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Consultar otros usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="consultarOtrosUsuarios"
+                        <%=perms.consultarOtrosUsuarios ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Consultar permisos de otros usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="consultarPermisos"
+                        <%=perms.consultarPermisos ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Crear/modificar usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="crearUsuarios" <%=perms.crearUsuarios
+                        ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Modificar contraseña de otros usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="cambiarContrasenas"
+                        <%=perms.cambiarContrasenas ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Eliminar o desactivar usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="eliminarUsuarios"
+                        <%=perms.eliminarUsuarios ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center p-4 permission-row">
+                    <span>Exportar usuarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="exportarUsuarios"
+                        <%=perms.exportarUsuarios ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- STOCKS -->
+              <div class="bg-white rounded shadow permission-card">
+
+                <div class="border-b p-4 font-semibold">
+                  Stocks de productos
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 p-4 text-sm">
+
+                  <div class="flex justify-between items-center">
+                    <span>Consultar stocks</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="consultarStocks" <%=perms.consultarStocks
+                        ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span>Consultar movimientos de stock</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="consultarMovimientosStock"
+                        <%=perms.consultarMovimientosStock ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span>Crear/modificar almacenes</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="crearAlmacenes" <%=perms.crearAlmacenes
+                        ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span>Ver inventarios</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="verInventarios" <%=perms.verInventarios
+                        ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span>Eliminar almacenes</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="eliminarAlmacenes"
+                        <%=perms.eliminarAlmacenes ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="flex justify-between items-center">
+                    <span>Eliminar inventario</span>
+                    <label class="switch">
+                      <input class="perm-checkbox" type="checkbox" data-perm="eliminarInventario"
+                        <%=perms.eliminarInventario ? 'checked' : '' %>
+                      <%= isEditable ? '' : 'disabled' %>>
+                        <span class="slider"></span>
+                    </label>
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- IMPORTACIONES -->
+              <div class="grid grid-cols-2 gap-6">
+
+                <div class="bg-white rounded shadow permission-card">
+
+                  <div class="border-b p-4 font-semibold">
+                    Impresión y márgenes
+                  </div>
+
+                  <div class="space-y-4 p-4 text-sm">
+
+                    <div class="flex justify-between items-center">
+                      <span>Permitir impresión directa</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="impresionDirecta"
+                          <%=perms.impresionDirecta ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                      <span>Impresora de tickets</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="impresoraTickets"
+                          <%=perms.impresoraTickets ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                      <span>Leer márgenes comerciales</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="leerMargenes" <%=perms.leerMargenes
+                          ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                      <span>Definir márgenes comerciales</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="definirMargenes"
+                          <%=perms.definirMargenes ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+
+                <div class="bg-white rounded shadow permission-card">
+
+                  <div class="border-b p-4 font-semibold">
+                    Importación y exportación
+                  </div>
+
+                  <div class="space-y-4 p-4 text-sm">
+
+                    <div class="flex justify-between items-center">
+                      <span>Lanzar importaciones en masa</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="lanzarImportaciones"
+                          <%=perms.lanzarImportaciones ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                      <span>Obtener resultado de exportación</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="obtenerResultadoExportacion"
+                          <%=perms.obtenerResultadoExportacion ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                      <span>Crear/editar exportaciones</span>
+                      <label class="switch">
+                        <input class="perm-checkbox" type="checkbox" data-perm="crearEditarExportaciones"
+                          <%=perms.crearEditarExportaciones ? 'checked' : '' %>
+                        <%= isEditable ? '' : 'disabled' %>>
+                          <span class="slider"></span>
+                      </label>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- BOTONES -->
+              <div class="flex justify-end gap-4">
+
+                <% if (isEditable) { %>
+                  <button id="cancelChangesBtn" class="border px-5 py-2 rounded">
+                    Cancelar
+                  </button>
+
+                  <button id="saveChangesBtn" class="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
+                    Guardar Cambios
+                  </button>
+                  <% } else { %>
+                    <p class="text-gray-500 text-sm">Estos son todos los permisos actuales con los que cuentas. Para
+                      cambiarlos contacta a un administrador.</p>
+                    <% } %>
+
+              </div>
+
+
+
+            </div>
+
+            <%- include('../partials/alertModal') %>
+
+            <!-- MODAL EDITAR INFORMACIÓN -->
+            <div id="editUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white rounded shadow-lg p-8 w-full max-w-md relative">
+                <button id="editUserModalClose" type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition" aria-label="Cerrar editar información">
+                  <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                <h3 class="text-xl font-bold mb-6">Editar Información</h3>
+                
+                <form id="editUserForm" class="space-y-5">
+                  
+                  <!-- Nombre de usuario -->
+                  <div>
+                    <label class="text-xs md:text-sm text-gray-600 block mb-2">Nombre de usuario</label>
+                    <input type="text" id="editUsername" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                  </div>
+
+                  <!-- Email -->
+                  <div>
+                    <label class="text-xs md:text-sm text-gray-600 block mb-2">Email</label>
+                    <input type="email" id="editEmail" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                  </div>
+
+                  <!-- Teléfono con +52 fijo -->
+                  <div>
+                    <label class="text-xs md:text-sm text-gray-600 block mb-2">Teléfono</label>
+                    <input type="text" id="editPhone" value="+52 " placeholder="+52 618 238 97 64" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition" inputmode="numeric" autocomplete="tel">
+                  </div>
+
+                  <!-- Rol con fondo gris -->
+                  <div>
+                    <label class="text-xs md:text-sm text-gray-600 block mb-2">Rol</label>
+                    <select id="editRole" class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                      <option value="1">Administrador</option>
+                      <option value="2">Vendedor</option>
+                    </select>
+                  </div>
+
+                  <!-- Botones -->
+                  <div class="flex justify-end gap-3 mt-8 pt-6 border-t">
+                    <button type="button" id="editUserCancel" class="border border-gray-300 px-5 py-2 rounded hover:bg-gray-50 text-sm font-medium transition">
+                      Cancelar
+                    </button>
+                    <button type="button" id="editUserSave" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded text-sm font-medium transition">
+                      Guardar
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+
+          <!-- Modal para cambiar foto de perfil -->
+          <div id="changePhotoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4 relative">
+              <button id="closeChangePhotoModalPermisos" type="button" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition" aria-label="Cerrar cambiar foto de perfil">
+                <i class="fa-solid fa-xmark text-lg"></i>
+              </button>
+              <h3 class="text-lg font-semibold mb-2 text-center">Cambiar Foto de Perfil</h3>
+              
+              <form id="changePhotoForm" enctype="multipart/form-data">
+                <p class="text-sm text-gray-600 mb-4 text-center">Selecciona una imagen</p>
+                
+                <!-- Zona de drag and drop -->
+                <div 
+                  id="dropZone"
+                  class="mb-4 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition"
+                  style="background-color: #f9fafb;"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2 text-gray-400">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <input 
+                    id="changePhotoInput" 
+                    name="profileImage" 
+                    type="file" 
+                    accept="image/jpeg,image/png" 
+                    class="hidden"
+                  >
+                  <p class="text-sm text-gray-600 mb-1">
+                    <span id="fileNameDisplay">Ningún archivo seleccionado</span>
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    <button type="button" id="selectFileBtn" class="text-orange-600 hover:text-orange-700 font-medium">
+                      Seleccionar archivo
+                    </button>
+                    o arrastra aquí
+                  </p>
+                </div>
+
+                <p class="text-xs text-gray-500 mb-4 text-center">Formatos JPG, JPEG, PNG. Tamaño máximo 5 MB.</p>
+                
+                <div id="changePhotoError" class="text-xs text-red-500 mb-4 text-center" style="display: none;"></div>
+
+                <div class="mb-6 text-center">
+                  <img 
+                    id="changePhotoPreview" 
+                    src="/images/user.jpg" 
+                    alt="Preview" 
+                    class="w-32 h-32 rounded-full border-4 border-gray-200 object-cover mx-auto"
+                  >
+                </div>
+
+                <div class="flex gap-3 justify-center">
+                  <button type="button" id="cancelChangePhoto" class="px-6 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm font-medium transition">
+                    Cancelar
+                  </button>
+                  <button type="submit" id="submitChangePhoto" class="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm font-medium transition" disabled>
+                    Guardar Foto
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Input file hidden para preview -->
+          <input type="file" id="profileImageInput" accept="image/jpeg,image/png" style="display: none;">
+
+              <script>
+                // Initialize targetUserId from data attribute (make it global for page-scripts.js)
+                const section = document.querySelector('[data-target-user-id]');
+                window.targetUserId = section ? parseInt(section.dataset.targetUserId) || null : null;
+              </script>
+              <script>
+                // Validación y formateo de teléfono en modal de edición
+                const editPhoneInput = document.getElementById('editPhone');
+                if (editPhoneInput) {
+                    const PHONE_PREFIX = '+52 ';
+                    const formatMxPhone = (digits) => {
+                        const cleaned = digits.slice(0, 10);
+                        const part1 = cleaned.slice(0, 3);
+                        const part2 = cleaned.slice(3, 6);
+                        const part3 = cleaned.slice(6, 8);
+                        const part4 = cleaned.slice(8, 10);
+                        return [part1, part2, part3, part4].filter(Boolean).join(' ');
+                    };
+
+                    const normalizeEditPhone = () => {
+                        const onlyDigits = editPhoneInput.value.replace(/\D/g, '');
+                        const nationalDigits = onlyDigits.startsWith('52') ? onlyDigits.slice(2) : onlyDigits;
+                        editPhoneInput.value = `${PHONE_PREFIX}${formatMxPhone(nationalDigits)}`.trimEnd();
+                    };
+
+                    editPhoneInput.addEventListener('focus', () => {
+                        if (!editPhoneInput.value) {
+                            editPhoneInput.value = PHONE_PREFIX;
+                        }
+                    });
+
+                    editPhoneInput.addEventListener('input', normalizeEditPhone);
+                    editPhoneInput.addEventListener('keydown', (ev) => {
+                        const cursor = editPhoneInput.selectionStart || 0;
+                        if ((ev.key === 'Backspace' || ev.key === 'Delete') && cursor <= PHONE_PREFIX.length) {
+                            ev.preventDefault();
+                        }
+                    });
+
+                    normalizeEditPhone();
+                }
+              </script>
+
+</section>

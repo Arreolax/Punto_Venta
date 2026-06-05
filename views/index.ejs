@@ -1,0 +1,80 @@
+<div class="relative min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
+  <%- include('./partials/alertModal') %>
+
+  <!-- Fondo naranja izquierdo -->
+  <div class="absolute top-0 left-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);"></div>
+
+  <!-- Fondo naranja derecho -->
+  <div class="absolute top-0 right-0 w-1/2 h-full bg-orange-600"
+    style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+    <div class="absolute top-4 right-6 text-right text-white text-base leading-tight tracking-wide">
+      <p id="fecha" class="fecha text-sm"></p>
+      <p id="hora" class="hora text-sm"></p>
+    </div>
+  </div>
+
+  <div class="relative bg-orange-600 w-10/12 md:w-[425px] p-8 shadow-md text-center m-0">
+
+    <div class="relative bg-white w-full md:w-[360px] p-8 shadow-md text-center mx-auto">
+
+      <div class="flex justify-center mb-6">
+        <img src="/images/logo-b.png" class="w-full h-auto" alt="Logo">
+      </div>
+
+      <form id="loginForm" class="space-y-6">
+
+        <div class="flex items-center border-b border-gray-500 pb-2 focus-within:border-orange-500 transition">
+          <i class="fa fa-user text-black mr-3 "></i>
+          <input type="text" id="email" name="email" placeholder="Usuario o Email" value="admin@admin.com"
+            class="bg-transparent outline-none w-full" required>
+        </div>
+
+        <div
+          class="relative flex items-center border-b border-gray-500 pb-2 focus-within:border-orange-500 transition">
+          <i class="fa fa-key text-black mr-3"></i>
+          <input type="password" id="password" name="password" placeholder="Contraseña"  value="admin12345"
+            class="bg-transparent outline-none w-full pr-10" required>
+          <button type="button" id="togglePassword"
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition">
+            <i id="togglePasswordIcon" class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+
+        <!-- Caps Lock indicator para login -->
+        <div id="loginCapsWarning" class="text-xs text-yellow-600 hidden flex items-center gap-1 mt-2">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Bloq Mayus activado</span>
+        </div>
+
+        <div id="errorMessage" class="hidden bg-opacity-40 text-red-600 font-bold rounded p-2 bg-red-600"></div>
+
+        <div class="flex flex-col items-center gap-2">
+          <button type="submit" id="btnLogin"
+            class="mt-6 inline-block rounded bg-[#FF5100] px-6 py-3 text-white font-medium hover:bg-[#ba3216] transition">
+            INICIO DE SESIÓN
+          </button>
+
+          <a href="/recuperar" class="text-sm text-gray-700 hover:underline">
+            ¿Olvidaste tu contraseña? 
+          </a>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('session') === 'expired') {
+    const err = document.getElementById('errorMessage');
+    if (err) {
+      err.textContent = 'Sesión no válida o expirada. Por favor inicia sesión.';
+      err.classList.remove('hidden');
+    }
+  }
+</script>
+<script src="/js/login.js"></script>

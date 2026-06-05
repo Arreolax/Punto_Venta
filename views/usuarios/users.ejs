@@ -1,0 +1,231 @@
+<div class="w-full mx-auto">
+
+  <div class="bg-white rounded-xl shadow border border-gray-200 mb-6 overflow-hidden">
+    <div class="p-4 lg:p-5 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/40">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h1 class="font-bold text-2xl lg:text-3xl text-slate-900">Usuarios</h1>
+          <p class="text-gray-500 text-sm lg:text-base">Administra los accesos y roles de tu equipo de trabajo.</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <% if (permissions && permissions.exportarUsuarios) { %>
+            <button id="exportUsersBtn"
+              class="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-emerald-600 text-sm font-medium"
+              title="Exportar usuarios a CSV">
+              <i class="fa-solid fa-download"></i>
+              Exportar Usuarios
+            </button>
+            <% } %>
+              <% if (permissions && permissions.crearUsuarios) { %>
+                <a href="/creacion"
+                  class="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-orange-600 text-sm font-medium">
+                  <i class="fa-solid fa-user-plus"></i>
+                  Crear Nuevo Usuario
+                </a>
+                <% } %>
+        </div>
+      </div>
+    </div>
+
+    <%
+      const showingFrom = totalUsers > 0 ? ((currentPage - 1) * pageSize) + 1 : 0;
+      const showingTo = Math.min(totalUsers, currentPage * pageSize);
+    %>
+    <div class="p-4 lg:p-5 flex flex-col gap-3">
+      <div class="flex flex-col lg:flex-row gap-3 lg:items-center">
+      <div class="relative lg:flex-1">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#FF5100] text-sm">
+          <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+        </span>
+        <input id="userSearch" type="text" value="<%= filters?.search || '' %>"
+          placeholder="Buscar por email, usuario, nombre o apellido"
+          class="w-full border border-gray-300 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+      </div>
+
+      <select id="roleFilter"
+        class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-max">
+        <option value="">Rol: Todos</option>
+        <option value="administrador" <%=filters?.role==='administrador' ? 'selected' : '' %>>Administrador</option>
+        <option value="vendedor" <%=filters?.role==='vendedor' ? 'selected' : '' %>>Vendedor</option>
+      </select>
+
+      <select id="statusFilter"
+        class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-max">
+        <option value="">Estado: Todos</option>
+        <option value="activo" <%=filters?.status==='activo' ? 'selected' : '' %>>Activo</option>
+        <option value="inactivo" <%=filters?.status==='inactivo' ? 'selected' : '' %>>Inactivo</option>
+      </select>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs lg:text-sm">
+        <div id="usersTopSummary" class="text-gray-600">
+          Mostrando del <strong><%= showingFrom %></strong> al <strong><%= showingTo %></strong> de <strong><%= totalUsers %></strong> usuarios
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="pageSizeFilter" class="text-gray-600 font-medium">Mostrar</label>
+          <select id="pageSizeFilter" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="10" <%= pageSize === 10 ? 'selected' : '' %>>10</option>
+            <option value="25" <%= pageSize === 25 ? 'selected' : '' %>>25</option>
+            <option value="50" <%= pageSize === 50 ? 'selected' : '' %>>50</option>
+            <option value="100" <%= pageSize === 100 ? 'selected' : '' %>>100</option>
+          </select>
+          <span class="text-gray-600">por página</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded shadow overflow-x-auto">
+
+    <table class="w-full text-left text-sm lg:text-base border-collapse">
+
+      <thead class="bg-gray-50 text-gray-600 text-xs lg:text-sm font-semibold sticky top-0">
+        <tr>
+          <th class="p-3 lg:p-4 min-w-[50px] text-center">Foto</th>
+          <th class="p-3 lg:p-4 min-w-[120px]">Usuario</th>
+          <th class="p-3 lg:p-4 min-w-[180px]">Email</th>
+          <th class="p-3 lg:p-4 min-w-[130px]">Rol</th>
+          <th class="p-3 lg:p-4 min-w-[100px]">Estado</th>
+          <th class="p-3 lg:p-4 min-w-[140px]">Último acceso</th>
+          <th class="p-3 lg:p-4 min-w-[140px] text-center">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody class="text-xs lg:text-sm divide-y">
+        <% const roleLabels={1: 'Administrador' , 2: 'Vendedor' }; %>
+          <% users.forEach(userRow=> { %>
+            <tr data-user-id="<%= userRow.id %>" class="hover:bg-gray-50 transition">
+              <td class="p-3 lg:p-4 text-center"><img src="<%= userRow.profile_image_path || '/images/user.jpg' %>"
+                  class="w-8 h-8 rounded-full object-cover mx-auto" alt="Avatar <%= userRow.username %>"></td>
+              <td class="p-3 lg:p-4 font-medium text-gray-900">
+                <%= userRow.username %>
+              </td>
+              <td class="p-3 lg:p-4 text-gray-600 break-all">
+                <%= userRow.email %>
+              </td>
+              <td class="p-3 lg:p-4">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold <%= userRow.role_id === 2 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700' %>">
+                  <i class="fa-solid <%= userRow.role_id === 2 ? 'fa-user' : 'fa-user-shield' %> <%= userRow.role_id === 2 ? 'text-blue-500' : 'text-orange-500' %>"></i>
+                  <%= roleLabels[userRow.role_id] || 'Usuario' %>
+                </span>
+              </td>
+              <td class="p-3 lg:p-4">
+                <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold <%= userRow.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                  <i class="fa-solid fa-circle text-[0.5rem] <%= userRow.is_active ? 'text-green-500' : 'text-red-500' %>"></i>
+                  <%= userRow.is_active ? 'Activo' : 'Inactivo' %>
+                </span>
+              </td>
+              <td class="p-3 lg:p-4 text-gray-600 text-xs lg:text-sm whitespace-nowrap">
+                <% const lastAccess=userRow.last_access || userRow.updated_at || userRow.created_at; let
+                  lastAccessFormatted='-' ; if (lastAccess) { const d=new Date(lastAccess); if
+                  (!Number.isNaN(d.getTime())) { lastAccessFormatted=d.toLocaleDateString('es-MX') + ' ' +
+                  d.toLocaleTimeString('es-MX', { hour: '2-digit' , minute: '2-digit' }); } } %>
+                  <%= lastAccessFormatted %>
+              </td>
+              <td class="p-3 lg:p-4 text-center">
+                <div class="flex items-center justify-center gap-2 lg:gap-3">
+                  <% if (permissions && (permissions.consultarPermisos || permissions.crearUsuarios ||
+                    permissions.cambiarContrasenas || permissions.eliminarUsuarios)) { %>
+                    <!-- Botón: Cambiar contraseña (si tiene PERMISO: cambiar_contraseñas) -->
+                    <% if (permissions.cambiarContrasenas) { %>
+                      <button title="Editar contraseña" aria-label="Editar contraseña"
+                        class="resetPasswordBtn inline-flex items-center justify-center w-11 h-9 rounded border border-orange-600 bg-white text-orange-600 hover:bg-orange-50 transition text-xs font-medium"
+                        data-user-id="<%= userRow.id %>" data-username="<%= userRow.username %>"
+                        data-permission="cambiarContrasenas">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                          stroke="currentColor" class="w-4 h-4" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z" />
+                        </svg>
+                      </button>
+                      <% } %>
+
+                        <!-- Botón: Ver o Editar permisos (si tiene PERMISO: consultar_permisos o crear_usuarios) -->
+                        <% if (permissions.consultarPermisos || permissions.crearUsuarios) { %>
+                          <a title="<%= permissions.crearUsuarios ? 'Editar permisos' : 'Ver permisos' %> del usuario"
+                            aria-label="<%= permissions.crearUsuarios ? 'Editar permisos' : 'Ver permisos' %> del usuario"
+                            href="/permisos?userId=<%= userRow.id %>"
+                            class="editPermissionsBtn inline-flex items-center justify-center w-11 h-9 rounded border border-blue-600 bg-white text-blue-600 hover:bg-blue-50 transition text-xs font-medium"
+                            data-permission="<%= permissions.crearUsuarios ? 'crearUsuarios' : 'consultarPermisos' %>">
+                            <% if (permissions.crearUsuarios) { %>
+                              <!-- Ícono de edición -->
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="w-4 h-4" aria-hidden="true">
+                                <path d="M12 20h9" />
+                                <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                              </svg>
+                              <% } else { %>
+                                <!-- Ícono de ojo azul (solo ver) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                  class="w-4 h-4" aria-hidden="true">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                  <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <% } %>
+                          </a>
+                          <% } %>
+
+                            <!-- Botón: Eliminar usuario (si tiene PERMISO: eliminar_usuarios) -->
+                            <% if (permissions.eliminarUsuarios) { %>
+                              <button title="Eliminar usuario permanentemente"
+                                aria-label="Eliminar usuario permanentemente"
+                                class="deleteUserBtn inline-flex items-center justify-center w-11 h-9 rounded border border-red-600 bg-white text-red-600 hover:bg-red-50 transition text-xs font-medium"
+                                data-user-id="<%= userRow.id %>" data-username="<%= userRow.username %>"
+                                data-permission="eliminarUsuarios">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                  class="w-4 h-4" aria-hidden="true">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                  <path d="M10 11v6" />
+                                  <path d="M14 11v6" />
+                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                </svg>
+                              </button>
+                              <% } %>
+                                <% } else { %>
+                                  <span class="text-xs text-gray-400">Sin permisos</span>
+                                  <% } %>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+      </tbody>
+    </table>
+
+    <div
+      class="flex flex-col lg:flex-row items-center justify-between gap-4 px-4 py-3 bg-gray-50 border-t text-xs lg:text-sm">
+      <div class="text-gray-600" id="userSummary">Mostrando del <strong>
+          <%= showingFrom %>
+        </strong> al <strong>
+          <%= showingTo %>
+        </strong> de <strong>
+          <%= totalUsers %>
+        </strong> usuarios</div>
+      <div id="serverPaginationControls" class="flex items-center gap-1 flex-wrap justify-center">
+        <% const maxLinks=7; const startPage=Math.max(1, currentPage - Math.floor(maxLinks/2)); const
+          endPage=Math.min(totalPages, startPage + maxLinks - 1); %>
+          <% const searchParam=encodeURIComponent(filters?.search || '' ); const
+            roleParam=encodeURIComponent(filters?.role || '' ); const statusParam=encodeURIComponent(filters?.status
+            || '' ); %>
+            <a href="/usuarios?page=<%= Math.max(1, currentPage-1) %>&pageSize=<%= pageSize %>&search=<%= searchParam %>&role=<%= roleParam %>&status=<%= statusParam %>"
+              class="px-2.5 py-1.5 lg:px-3 lg:py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 transition font-medium <%= currentPage === 1 ? 'cursor-not-allowed opacity-50' : '' %>">Anterior</a>
+            <% for (let p=startPage; p <=endPage; p++) { %>
+              <a href="/usuarios?page=<%= p %>&pageSize=<%= pageSize %>&search=<%= searchParam %>&role=<%= roleParam %>&status=<%= statusParam %>"
+                class="px-2.5 py-1.5 lg:px-3 lg:py-1 rounded border font-medium <%= p === currentPage ? 'bg-orange-100 border-orange-300 text-orange-700' : 'border-gray-300 bg-white hover:bg-gray-100' %> transition">
+                <%= p %>
+              </a>
+              <% } %>
+                <a href="/usuarios?page=<%= Math.min(totalPages, currentPage+1) %>&pageSize=<%= pageSize %>&search=<%= searchParam %>&role=<%= roleParam %>&status=<%= statusParam %>"
+                  class="px-2.5 py-1.5 lg:px-3 lg:py-1 rounded border border-gray-300 bg-white hover:bg-gray-100 transition font-medium <%= currentPage === totalPages ? 'cursor-not-allowed opacity-50' : '' %>">Siguiente</a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<%- include('../partials/alertModal') %>

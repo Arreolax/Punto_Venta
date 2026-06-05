@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FF5100">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <title>Punto de Venta</title>
+  <link href="/styles/styles.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../libs/fontawesome/css/all.min.css">
+</head>
+
+<body class="h-screen overflow-hidden bg-gray-100"
+  data-users-server-paging="<%= typeof users !== 'undefined' ? 'true' : 'false' %>">
+  <% const hideSidebarRoutes=['/dashboard', '/inventario' , '/usuarios' , '/clientes' ]; const
+    hideSidebar=hideSidebarRoutes.includes(path) || (typeof is404 !=='undefined' && is404); %>
+
+    <header class="fixed top-0 left-0 w-full h-14 bg-[#FF5100] text-white z-50 shadow-md">
+      <div class="flex items-center h-full px-2">
+
+        <div class="flex items-center gap-2">
+
+          <% if (!hideSidebar) { %>
+            <button id="menuBtn" class="px-2 text-2xl md:hidden">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <% } %>
+
+              <button id="topMenuBtn" class="md:hidden text-white text-xl px-2 hover:text-gray-200 transition">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+              </button>
+
+              <span
+                class="flex md:hidden absolute top-1/2 left-1/2 pr-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+                <img src="/images/logo-b.png" class="w-36 h-12 object-contain rounded-md" alt="Logo">
+              </span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-6 flex-1 overflow-hidden">
+          <%- include('../components/topIcon',{icon:'fa-house',label:'Inicio',to:'/dashboard'}) %>
+
+            <% if (user && user.permissions && user.permissions.consultarOtrosUsuarios) { %>
+              <%- include('../components/topIcon',{icon:'fa-users',label:'Usuarios',to:'/usuarios'}) %>
+                <% } %>
+
+                  <%- include('../components/topIcon',{icon:'fa-address-card',label:'Clientes',to:'/clientes'}) %>
+
+                    <% if (user && user.permissions && user.permissions.verInventarios) { %>
+                      <%- include('../components/topIcon',{icon:'fa-box',label:'Inventario',to:'/inventario'}) %>
+                        <% } %>
+
+                          <%- include('../components/topIcon',{icon:'fa-bag-shopping',label:'Ventas',to:'/ventas'}) %>
+                            <%-
+                              include('../components/topIcon',{icon:'fa-file-invoice',label:'Facturación',to:'/facturas'})
+                              %>
+        </div>
+
+        <div class="flex items-center gap-3 ml-auto min-w-0">
+
+          <div class="hidden md:flex space-x-3 pr-2 shrink-0">
+            <div id="wifiIcon" class="hidden">
+              <i class="fas fa-wifi text-xl" title="✅ Con Conexión a Internet"></i>
+            </div>
+            <div id="noWifiIcon" class="hidden">
+              <i class="fas fa-exclamation-triangle text-xl" title="❌ Sin Conexión a Internet"></i>
+            </div>
+          </div>
+
+          <div class="relative">
+
+            <div id="userMenuToggle" class="flex items-center gap-2 cursor-pointer select-none min-w-0" role="button"
+              tabindex="0">
+
+              <div class="block sm:hidden text-[11px] leading-tight text-right min-w-0">
+                <p class="font-semibold break-words leading-tight">
+                  <%= (user && user.name) ? `${user.name} ${user.last_name || '' }` : 'Usuario' %>
+                </p>
+
+                <p id="userId" class="font-medium truncate max-w-[140px] hidden">
+                  <%= (user && user.id) ? user.id : '' %>
+                </p>
+
+                <p class="font-bold text-black text-[10px]">
+                  <%= (user && user.role_id===1) ? 'Administrador' : (user && user.role_id===2) ? 'Vendedor' : (user &&
+                    user.role_id===3) ? 'Interno' : 'Invitado' %>
+                </p>
+
+                <p class="text-[10px] opacity-80 fecha"></p>
+              </div>
+
+              <div class="hidden sm:flex items-center gap-2 min-w-0">
+
+                <img src="<%= (user && user.profile_image_path) ? user.profile_image_path : '/images/user.jpg' %>"
+                  class="h-8 w-8 rounded-full object-cover shrink-0" alt="Avatar" onerror="this.src='/images/user.jpg'">
+
+                <div class="text-[12px] leading-tight min-w-0">
+                  <p class="font-medium truncate max-w-[140px]">
+                    <%= (user && user.name) ? `${user.name} ${user.last_name || '' }` : 'Usuario' %>
+                  </p>
+
+                  <p id="userId" class="font-medium truncate max-w-[140px] hidden">
+                    <%= (user && user.id) ? user.id : '' %>
+                  </p>
+
+                  <p class="font-bold text-black text-xs">
+                    <%= (user && user.role_id===1) ? 'Administrador' : (user && user.role_id===2) ? 'Vendedor' : (user
+                      && user.role_id===3) ? 'Interno' : 'Invitado' %>
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div id="userMenu" class="absolute right-0 md:left-2 mt-2 md:mt-2 w-40 text-[13px] shadow-lg 
+      opacity-0 scale-95 -translate-y-2 pointer-events-none
+      transition-all duration-200 ease-out bg-white z-50">
+
+              <a href="/perfil" class="block px-4 py-2 bg-[#FF5100] text-white hover:bg-[#ff7f44] transition">
+                Perfil
+              </a>
+
+              <hr>
+
+              <button type="button"
+                class="logoutBtn block w-full text-left px-4 py-2 font-bold text-red-600 hover:bg-gray-200">
+                Cerrar sesión
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="text-right text-[13px] tracking-wider hidden md:block shrink-0">
+            <p class="fecha"></p>
+            <p class="hora"></p>
+          </div>
+
+        </div>
+    </header>
+
+
+    <nav id="mobileTopMenu"
+      class="fixed top-14 left-0 w-full bg-[#FF5100] text-white shadow-lg border-t border-white/20 flex flex-col md:hidden z-40 transform transition-all duration-300 -translate-y-full opacity-0 pointer-events-none">
+
+      <a href="/dashboard" class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors">
+        <i class="fa-solid fa-house w-5 text-center"></i> Inicio
+      </a>
+
+      <% if (user && user.permissions && user.permissions.consultarOtrosUsuarios) { %>
+        <a href="/usuarios"
+          class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors border-t border-white/10">
+          <i class="fa-solid fa-users w-5 text-center"></i> Usuarios
+        </a>
+        <% } %>
+
+          <a href="/clientes"
+            class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors border-t border-white/10">
+            <i class="fa-solid fa-address-card w-5 text-center"></i> Clientes
+          </a>
+
+          <% if (user && user.permissions && user.permissions.verInventarios) { %>
+            <a href="/inventario"
+              class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors border-t border-white/10">
+              <i class="fa-solid fa-box w-5 text-center"></i> Inventario
+            </a>
+            <% } %>
+
+              <a href="/ventas"
+                class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors border-t border-white/10">
+                <i class="fa-solid fa-bag-shopping w-5 text-center"></i> Ventas
+              </a>
+
+              <a href="/facturas"
+                class="flex items-center gap-3 px-6 py-3 hover:bg-[#ff7f44] transition-colors border-t border-white/10">
+                <i class="fa-solid fa-file-invoice w-5 text-center"></i> Facturación
+              </a>
+    </nav>
+
+    <div class="flex h-screen bg-gray-100 pt-14">
+
+      <% if (!hideSidebar) { %>
+        <aside id="sidebar" class="fixed h-full md:top-16 md:left-0 border border-gray-400/50 z-40 w-64 
+md:h-[calc(100vh-4.5rem)] bg-white transform transition-transform duration-300 -translate-x-full md:translate-x-0
+flex flex-col">
+
+          <div class="flex-1 overflow-y-auto py-4">
+
+
+            <% if (['/permisos','/creacion','/perfil'].includes(path)) { %>
+              <div class="mb-4">
+                <h3 class="px-4 py-2 text-sm font-bold text-gray-700 uppercase"></h3>
+
+                <ul class="">
+                  <%- include('../components/menuSection',{ title:'Usuarios', icon:'fa-users', items:[{
+                    label:'Permisos', to:'/permisos' }], path, setMenu: ()=> { hasMenu = true }
+                    }) %></li>
+                    <li><button id="sidebarLogoutBtn"
+                        class="logoutBtn pl-6 mt-2 w-full text-left text-sm text-red-600 font-bold hover:text-red-500">Cerrar
+                        sesión</button></li>
+                </ul>
+              </div>
+              <% } else { %>
+                <% let hasMenu=false; %>
+
+                  <% if (user && user.role_id===1) { %>
+                    <%- include('../components/menuSection',{ title:'Usuarios', icon:'fa-users', items:[{ label:'Lista',
+                      to:'/usuarios' }], path, setMenu: ()=> { hasMenu = true } }) %>
+
+                      <% } %>
+
+                        <%- include('../components/menuSection',{ title:'Inventario', icon:'fa-boxes-stacked', items:[{
+                          label:'Productos', to:'/inventario' }], path, setMenu: ()=> { hasMenu = true }
+                          }) %>
+
+                          <%- include('../components/menuSection',{ title:'Ventas', icon:'fa-cart-shopping', items:[ {
+                            label:'Registro de Ventas', to:'/ventas' }, { label:'Emitir Venta', to:'/ventas/nueva' } ],
+                            path, forceShow: path.startsWith('/tickets') || path.startsWith('/ventas') }) %>
+
+                            <%- include('../components/menuSection',{ title:'Tickets', icon:'fa-receipt', items:[ {
+                              label:'Historial de Tickets', to:'/tickets' } ], path, forceShow:
+                              path.startsWith('/tickets') || path.startsWith('/ventas') }) %>
+
+
+                              <%- include('../components/menuSection',{ title:'Facturación', icon:'fa-file-invoice',
+                                items:[ { label:'Historial de Facturas', to:'/facturas' }, { label:'Nueva Factura',
+                                to:'/facturas/nueva' }], path, setMenu: ()=> { hasMenu = true }
+                                }) %>
+
+                                <% } %>
+
+          </div>
+
+          <div class="mt-auto border-t-0 border-gray-300 p-4 text-center text-sm text-gray-500 italic">
+            <button id="btnDevs">
+              <i class="fa-solid fa-circle-info" title="Devs"></i>
+            </button>
+            Versión <%= version %>
+          </div>
+
+        </aside>
+        <% } %>
+
+
+          <div id="overlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden"></div>
+
+          <main class="<%= hideSidebar ? 'ml-0' : 'ml-0 md:ml-64' %> flex flex-col flex-1 overflow-hidden pb-14">
+
+            <div id="scrollContainer" class="flex-1 min-h-0 overflow-y-auto pt-2 pr-4 pl-4">
+              <div
+                class="bg-white border border-gray-400/50 rounded shadow p-4 md:p-6 min-h-full flex flex-col relative">
+                <%- body %>
+              </div>
+            </div>
+
+            <button id="btnTop"
+              class="fixed bottom-16 right-5 z-40  opacity-0 translate-y-5 scale-90 pointer-events-none bg-[#FF5100] text-white text-3xl w-14 h-14 flex items-center justify-center rounded-full shadow-xl hover:bg-[#ff7f44] hover:scale-110 transition-all duration-300 ease-out">
+              <i class="fa-solid fa-caret-up"></i>
+            </button>
+
+            <footer
+              class="<%= hideSidebar ? 'ml-0' : 'ml-0 md:ml-64' %> fixed bottom-0 left-0 right-0 h-14 border bg-gray-400 flex items-center justify-center gap-4 text-sm md:text-lg z-20">
+              <span>© 2026 - Nombre de la empresa</span>
+              <a href="https://www.facebook.com/" target="_blank"
+                title="Facebook | ">
+                <i class="fa-brands fa-facebook text-xl"></i>
+              </a>
+
+              <a href="https://wa.me/" target="_blank" title="Whatsapp | ">
+                <i class="fa-brands fa-whatsapp text-xl"></i>
+              </a>
+
+              <a href="https://www.instagram.com/" target="_blank" title="Instagram | ">
+                <i class="fa-brands fa-instagram text-xl"></i>
+              </a>
+            </footer>
+
+          </main>
+    </div>
+    <!-- Modal Devs-->
+    <div id="modalDevs" class="fixed hidden inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="relative bg-white w-full max-w-2xl rounded-lg shadow-lg p-6 animate-fadeIn">
+
+        <button id="btnCerrarModalDevs"
+          class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition-colors" title="Cerrar">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <h2 class="text-[20px] font-semibold text-gray-800 pb-3">
+          « Equipo de Desarrollo »
+        </h2>
+
+        <div class="space-y-2 text-[16px] text-gray-600">
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-briefcase"></i>
+            <span class="font-bold not-italic text-black">Guadalupe Vargas -</span>
+            <span class="font-semibold">Líder de Proyecto, Analista y Diseñador</span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-code"></i>
+            <span class="font-bold not-italic text-black">Alejandro Arreola -</span>
+            <span class="font-semibold">Desarrollador Principal y Tester</span>
+            <a href="https://github.com/Arreolax" target="_blank" class="text-[#FF5100] hover:underline">
+              <i class="fa-brands fa-github"></i> GitHub
+            </a>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-code"></i>
+            <span class="font-bold not-italic text-black">Josue Diaz -</span>
+            <span class="font-semibold">Desarrollador, Tester y Administrador de DB</span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-code"></i>
+            <span class="font-bold not-italic text-black">Derek Martinez -</span>
+            <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-code"></i>
+            <span class="font-bold not-italic text-black">Tomas Tellez -</span>
+            <span class="font-semibold">Desarrollador y Tester</span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-code"></i>
+            <span class="font-bold not-italic text-black">Euen Galindo -</span>
+            <span class="font-semibold">Desarrollador, Tester y Diseñador</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/global.js"></script>
+    <script src="/js/header-menu.js"></script>
+    <script src="/js/page-scripts.js"></script>
+</body>
+
+</html>
