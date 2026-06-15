@@ -23,7 +23,7 @@
     <a href="https://github.com/Arreolax" target="_blank">@Arreolax</a> - Modulo Ventas/Tickets (Frontend/Testing) / Modulo Facturas (Backend/Testing) /  Modulo Clientes (Frontend/Backend/Testing) <img src="https://img.shields.io/badge/[Desarrollador%20Principal]-%20?style=flat&color=purple">
   </li>
   <li>
-    <a href="https://github.com/sedrick117" target="_blank">@sedrick117</a> - Modulo Usuarios (Backend/Testing) / Modulo Facturas (Frontend)
+    <a href="https://github.com/sedrick117" target="_blank">@sedrick117</a> - Modulo Usuarios (Backend/Testing)
   </li>
   <li>
     <a href="https://github.com/TOMASTELLEZ" target="_blank">@TOMASTELLEZ</a> - Modulo Inventario (Backend/Testing) / Modulo Usuarios (Frontend)
